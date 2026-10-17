@@ -538,9 +538,9 @@ export default function StructurePage() {
 
       <style>{`
         .structure-page {
-          padding: 2rem 1rem 4.5rem;
-          max-width: 1320px;
-          margin: 0 auto;
+          padding-top: 2rem;
+          padding-bottom: 4.5rem;
+          width: 100%;
           animation: fadeInPage 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 

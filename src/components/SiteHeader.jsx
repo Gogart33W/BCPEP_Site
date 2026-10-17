@@ -2,17 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Phone, Mail, MapPin, ChevronDown, ChevronRight, 
-  Menu, X, Search, Moon, Sun, Calendar, Clock, Award
+  Menu, X, Search, Moon, Sun, Calendar, Clock, Award, GraduationCap
 } from 'lucide-react';
 import menuData from '../../content/menu.json';
 
 export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState(null);
-  const [pinnedDropdown, setPinnedDropdown] = useState(null);
+  const [openIdx, setOpenIdx] = useState(null);
   const [mobileExpanded, setMobileExpanded] = useState({});
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+
+  const timerRef = React.useRef(null);
+
+  const clearTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,9 +32,9 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
   // Закриття меню при зміні маршруту
   useEffect(() => {
+    clearTimer();
     setMobileOpen(false);
-    setActiveDropdown(null);
-    setPinnedDropdown(null);
+    setOpenIdx(null);
   }, [location.pathname]);
 
   // Блокування скролу фонової сторінки при відкритому мобільному меню
@@ -41,71 +49,51 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
     };
   }, [mobileOpen]);
 
-  const openTimerRef = React.useRef(null);
-  const closeTimerRef = React.useRef(null);
-
   const handleMouseEnter = (idx) => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    if (openTimerRef.current) clearTimeout(openTimerRef.current);
-
-    if (activeDropdown !== null || pinnedDropdown !== null) {
-      setActiveDropdown(idx);
+    clearTimer();
+    // Якщо інше меню вже відкрите — перемикаємося негайно, без затримки
+    if (openIdx !== null) {
+      setOpenIdx(idx);
     } else {
-      openTimerRef.current = setTimeout(() => {
-        setActiveDropdown(idx);
-      }, 90);
+      timerRef.current = setTimeout(() => {
+        setOpenIdx(idx);
+      }, 70);
     }
   };
 
   const handleMouseLeave = (idx) => {
-    if (openTimerRef.current) clearTimeout(openTimerRef.current);
-
-    // Якщо вкладка закріплена кліком — не закриваємо при відведенні миші!
-    if (pinnedDropdown === idx) return;
-
-    closeTimerRef.current = setTimeout(() => {
-      setPinnedDropdown(currentPinned => {
-        if (currentPinned !== idx) {
-          setActiveDropdown(null);
-        }
-        return currentPinned;
-      });
-    }, 400);
+    clearTimer();
+    // Таймер перевіряє що закривається САМЕ ЦЕ меню і не закриває нововідкрите сусіднє
+    timerRef.current = setTimeout(() => {
+      setOpenIdx((current) => (current === idx ? null : current));
+    }, 220);
   };
 
-  const handleToggleDropdown = (idx, e) => {
+  const handleButtonClick = (idx, e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (openTimerRef.current) clearTimeout(openTimerRef.current);
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-
-    if (pinnedDropdown === idx) {
-      setPinnedDropdown(null);
-      setActiveDropdown(null);
-    } else {
-      setPinnedDropdown(idx);
-      setActiveDropdown(idx);
-    }
+    clearTimer();
+    setOpenIdx((current) => (current === idx ? null : idx));
   };
 
   const toggleMobileGroup = (idx) => {
-    setMobileExpanded(prev => ({
+    setMobileExpanded((prev) => ({
       ...prev,
-      [idx]: !prev[idx]
+      [idx]: !prev[idx],
     }));
   };
 
   useEffect(() => {
     const handleGlobalClick = (e) => {
       if (!e.target.closest('.desktop-nav')) {
-        setActiveDropdown(null);
-        setPinnedDropdown(null);
+        clearTimer();
+        setOpenIdx(null);
       }
     };
     const handleGlobalKey = (e) => {
       if (e.key === 'Escape') {
-        setActiveDropdown(null);
-        setPinnedDropdown(null);
+        clearTimer();
+        setOpenIdx(null);
         setMobileOpen(false);
       }
     };
@@ -145,9 +133,9 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
               <span>Акредитований заклад фахової передвищої освіти</span>
             </span>
             <span className="top-divider">•</span>
-            <Link to="/rozklad-zanyat/rozklad-zanyat" className="top-quick-schedule">
-              <Calendar size={13} />
-              <span>Розклад занять та дзвінки</span>
+            <Link to="/abituriyentu/vstup" className="top-quick-schedule">
+              <GraduationCap size={13} />
+              <span>Приймальна комісія</span>
             </Link>
           </div>
         </div>
@@ -169,11 +157,11 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
             </div>
           </Link>
 
-          {/* Десктопне меню з закріпленням та плавною анімацією */}
+          {/* Десктопне меню з плавною анімацією відкриття ТА закриття */}
           <nav className="desktop-nav" aria-label="Головне меню">
             {menuData.map((item, idx) => {
               const hasKids = item.children && item.children.length > 0;
-              const isCurrentOpen = activeDropdown === idx || pinnedDropdown === idx;
+              const isOpen = openIdx === idx;
               const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
 
               if (!hasKids) {
@@ -191,107 +179,97 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
               const subGroups = item.children.filter(c => c.children && c.children.length > 0);
               const singleItems = item.children.filter(c => !c.children || c.children.length === 0);
               const isMega = subGroups.length > 0;
+              const alignRight = idx >= 3;
 
               return (
                 <div 
                   key={idx}
-                  className={`nav-dropdown-wrapper ${isMega ? 'has-mega' : ''} ${isCurrentOpen ? 'is-open' : ''}`}
+                  className={`nav-dropdown-wrapper ${isMega ? 'has-mega' : ''} ${isOpen ? 'is-open' : ''}`}
                   onMouseEnter={() => handleMouseEnter(idx)}
                   onMouseLeave={() => handleMouseLeave(idx)}
                 >
                   <button 
                     type="button"
-                    onClick={(e) => handleToggleDropdown(idx, e)}
-                    className={`nav-item-link has-dropdown ${isActive ? 'active' : ''} ${isCurrentOpen ? 'menu-open' : ''}`}
-                    aria-expanded={isCurrentOpen}
+                    onClick={(e) => handleButtonClick(idx, e)}
+                    className={`nav-item-link has-dropdown ${isActive ? 'active' : ''} ${isOpen ? 'menu-open' : ''}`}
+                    aria-expanded={isOpen}
                   >
                     <span>{item.title}</span>
-                    <ChevronDown size={14} className={`dropdown-caret ${isCurrentOpen ? 'rotated' : ''}`} />
+                    <ChevronDown size={14} className={`dropdown-caret ${isOpen ? 'rotated' : ''}`} />
                   </button>
 
-                  {isCurrentOpen && (
-                    <div 
-                      className={`dropdown-menu-box ${isMega ? 'dropdown-mega-box' : ''}`}
-                      role="menu"
-                      onMouseEnter={() => handleMouseEnter(idx)}
-                      onMouseLeave={() => handleMouseLeave(idx)}
-                    >
-                      {isMega ? (
-                        <div className="mega-menu-grid">
-                          {/* Ліва колонка: Основні розділи */}
-                          <div className="mega-col mega-col-main">
-                            <span className="mega-section-label">Розділи</span>
-                            <div className="mega-links-list">
-                              {singleItems.map((sub, sIdx) => (
-                                <Link 
-                                  key={sIdx}
-                                  to={sub.path} 
-                                  className="dropdown-link"
-                                  onClick={() => {
-                                    setActiveDropdown(null);
-                                    setPinnedDropdown(null);
-                                  }}
-                                >
-                                  <span>{sub.title}</span>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Права колонка: Підрозділи або спеціальності */}
-                          <div className="mega-col mega-col-sub">
-                            {subGroups.map((group, gIdx) => (
-                              <div key={gIdx} className="mega-subgroup">
-                                <Link 
-                                  to={group.path} 
-                                  className="mega-group-header"
-                                  onClick={() => {
-                                    setActiveDropdown(null);
-                                    setPinnedDropdown(null);
-                                  }}
-                                >
-                                  <span>{group.title}</span>
-                                  <ChevronRight size={13} />
-                                </Link>
-
-                                <div className="mega-sub-grid">
-                                  {group.children.map((child, cIdx) => (
-                                    <Link 
-                                      key={cIdx}
-                                      to={child.path} 
-                                      className="dropdown-link sub-child-link"
-                                      onClick={() => {
-                                        setActiveDropdown(null);
-                                        setPinnedDropdown(null);
-                                      }}
-                                    >
-                                      <span>{child.title}</span>
-                                    </Link>
-                                  ))}
-                                </div>
-                              </div>
+                  {/* Завжди змонтовано в DOM — плавний вхід та вихід */}
+                  <div 
+                    className={`dropdown-menu-box ${isMega ? 'dropdown-mega-box' : ''} ${alignRight ? 'align-right' : ''} ${isOpen ? 'menu-visible' : ''}`}
+                    role="menu"
+                    aria-hidden={!isOpen}
+                  >
+                    {isMega ? (
+                      <div className="mega-menu-grid">
+                        {/* Ліва колонка: Основні розділи */}
+                        <div className="mega-col mega-col-main">
+                          <span className="mega-section-label">Розділи</span>
+                          <div className="mega-links-list">
+                            {singleItems.map((sub, sIdx) => (
+                              <Link 
+                                key={sIdx}
+                                to={sub.path} 
+                                className="dropdown-link"
+                                style={{ transitionDelay: isOpen ? `${sIdx * 15}ms` : '0ms' }}
+                                onClick={() => { clearTimer(); setOpenIdx(null); }}
+                              >
+                                <span>{sub.title}</span>
+                              </Link>
                             ))}
                           </div>
                         </div>
-                      ) : (
-                        <div className="dropdown-single-list">
-                          {item.children.map((sub, sIdx) => (
-                            <Link 
-                              key={sIdx}
-                              to={sub.path} 
-                              className="dropdown-link"
-                              onClick={() => {
-                                setActiveDropdown(null);
-                                setPinnedDropdown(null);
-                              }}
-                            >
-                              <span>{sub.title}</span>
-                            </Link>
+
+                        {/* Права колонка: Підрозділи або спеціальності */}
+                        <div className="mega-col mega-col-sub">
+                          {subGroups.map((group, gIdx) => (
+                            <div key={gIdx} className="mega-subgroup">
+                              <Link 
+                                to={group.path} 
+                                className="mega-group-header"
+                                onClick={() => { clearTimer(); setOpenIdx(null); }}
+                              >
+                                <span>{group.title}</span>
+                                <ChevronRight size={13} />
+                              </Link>
+
+                              <div className="mega-sub-grid">
+                                {group.children.map((child, cIdx) => (
+                                  <Link 
+                                    key={cIdx}
+                                    to={child.path} 
+                                    className="dropdown-link sub-child-link"
+                                    style={{ transitionDelay: isOpen ? `${(cIdx + 3) * 15}ms` : '0ms' }}
+                                    onClick={() => { clearTimer(); setOpenIdx(null); }}
+                                  >
+                                    <span>{child.title}</span>
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
                           ))}
                         </div>
-                      )}
-                    </div>
-                  )}
+                      </div>
+                    ) : (
+                      <div className="dropdown-single-list">
+                        {item.children.map((sub, sIdx) => (
+                          <Link 
+                            key={sIdx}
+                            to={sub.path} 
+                            className="dropdown-link"
+                            style={{ transitionDelay: isOpen ? `${sIdx * 18}ms` : '0ms' }}
+                            onClick={() => { clearTimer(); setOpenIdx(null); }}
+                          >
+                            <span>{sub.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -585,7 +563,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           display: inline-flex;
           align-items: center;
           gap: 0.35rem;
-          padding: 0.5rem 0.8rem;
+          padding: 0.5rem 0.75rem;
           font-size: 0.875rem;
           font-weight: 600;
           color: var(--text-main);
@@ -593,6 +571,9 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           transition: background-color var(--transition-fast), color var(--transition-fast);
           cursor: pointer;
           user-select: none;
+          white-space: nowrap;
+          height: 38px;
+          box-sizing: border-box;
         }
 
         .nav-item-link:hover, 
@@ -612,12 +593,13 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           color: var(--primary);
         }
 
-        /* Випадаюче меню: плавне, закріплене, без втрати фокусу */
+        /* Випадаюче меню: плавне відкриття ТА закриття без видалення з DOM */
         .dropdown-menu-box {
           position: absolute;
-          top: calc(100% + 4px);
+          top: calc(100% + 2px);
           left: 0;
-          min-width: 290px;
+          min-width: 280px;
+          max-width: min(640px, calc(100vw - 32px));
           background: var(--bg-surface);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
@@ -627,30 +609,39 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           flex-direction: column;
           gap: 0.25rem;
           z-index: 1200;
-          animation: navReveal 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          transform-origin: top center;
+
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+          transform: translateY(-6px) scale(0.985);
+          transform-origin: top left;
+          transition: opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+                      transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+                      visibility 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .dropdown-menu-box.align-right {
+          left: auto;
+          right: 0;
+          transform-origin: top right;
+        }
+
+        .dropdown-menu-box.menu-visible {
+          opacity: 1;
+          visibility: visible;
+          pointer-events: auto;
+          transform: translateY(0) scale(1);
         }
 
         /* Невидимий міст, що на 100% запобігає закриттю меню при русі мишки */
         .dropdown-menu-box::before {
           content: '';
           position: absolute;
-          top: -20px;
-          left: -15px;
-          right: -15px;
-          height: 24px;
+          top: -16px;
+          left: 0;
+          right: 0;
+          height: 18px;
           background: transparent;
-        }
-
-        @keyframes navReveal {
-          from {
-            opacity: 0;
-            transform: translateY(-8px) scale(0.99);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
         }
 
         .dropdown-single-list {
@@ -678,15 +669,17 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           transform: translateX(3px);
         }
 
-        /* Мега-меню для розгалужених списків */
+        /* Мега-меню для розгалужених списків з обмеженням висоти */
         .dropdown-mega-box {
-          min-width: 640px;
+          min-width: 620px;
+          max-height: 480px;
+          overflow-y: auto;
           padding: 1rem;
         }
 
         .mega-menu-grid {
           display: grid;
-          grid-template-columns: 220px 1fr;
+          grid-template-columns: 210px 1fr;
           gap: 1.25rem;
         }
 
@@ -989,8 +982,24 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           background: var(--bg-muted);
         }
 
-        /* Адаптивність під мобільні та планшети */
-        @media (max-width: 1160px) {
+        /* Адаптивність під ноутбуки, планшети та смартфони */
+        @media (max-width: 1480px) {
+          .header-search-pill .search-text {
+            display: none;
+          }
+          .header-search-pill {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            justify-content: center;
+          }
+          .nav-item-link {
+            padding: 0.45rem 0.6rem;
+            font-size: 0.84rem;
+          }
+        }
+
+        @media (max-width: 1280px) {
           .desktop-nav {
             display: none;
           }
@@ -1060,16 +1069,6 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
             background: var(--bg-surface);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-          }
-        }
-
-        @media (max-width: 420px) {
-          .brand-title {
-            display: none;
-          }
-          .brand-acronym {
-            font-size: 1.15rem;
-            letter-spacing: -0.02em;
           }
         }
 

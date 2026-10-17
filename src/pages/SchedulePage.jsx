@@ -240,9 +240,9 @@ export default function SchedulePage() {
 
       <style>{`
         .schedule-page {
-          padding: 2.5rem 1rem 4rem;
-          max-width: 1080px;
-          margin: 0 auto;
+          padding-top: 2rem;
+          padding-bottom: 4rem;
+          width: 100%;
         }
 
         .page-header {

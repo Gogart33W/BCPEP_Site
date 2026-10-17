@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { 
   FileText, ExternalLink, Download, Clock, 
-  Tag, ChevronRight, AlertCircle, ArrowLeft 
+  Tag, ChevronRight, AlertCircle, ArrowLeft,
+  FolderOpen, ArrowRight, Layers
 } from 'lucide-react';
 import { fetchPageOrNews } from '../api/client';
+import menuData from '../../content/menu.json';
 
 export default function GenericPage() {
   const location = useLocation();
@@ -59,6 +61,27 @@ export default function GenericPage() {
     }
     return html;
   }, [data?.content, data?.image, type]);
+
+  // Пошук чи є поточна сторінка батьківською категорією в menu.json
+  const matchedCategory = React.useMemo(() => {
+    const norm = slug.replace(/^\/|\/$/g, '');
+    const searchTree = (items) => {
+      for (const item of items) {
+        const itemNorm = (item.path || '').replace(/^\/|\/$/g, '');
+        if (itemNorm === norm) return item;
+        if (item.children) {
+          const found = searchTree(item.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return searchTree(menuData);
+  }, [slug]);
+
+  const textLength = (cleanedContent || '').replace(/<[^>]+>/g, '').trim().length;
+  const isShortContent = textLength < 120;
+  const isParentCategory = !!(matchedCategory?.children && matchedCategory.children.length > 0);
 
   if (loading) {
     return (
@@ -138,12 +161,48 @@ export default function GenericPage() {
         </div>
       )}
 
-      {/* Основний вміст з таблицями, текстом та картинками */}
-      <div 
-        className="page-html-content"
-        dangerouslySetInnerHTML={{ __html: cleanedContent }}
-        onClick={handleContentClick}
-      />
+      {/* Авто-каталог підрозділів (якщо це категорія-батько) */}
+      {isParentCategory && (
+        <section className="directory-hub-section">
+          <div className="directory-hub-header">
+            <div className="hub-header-title">
+              <FolderOpen size={22} className="hub-icon" />
+              <h2>Офіційні матеріали та сторінки розділу</h2>
+            </div>
+            <p>Оберіть потрібний підрозділ або документ для перегляду детальної інформації:</p>
+          </div>
+          <div className="directory-cards-grid">
+            {matchedCategory.children.map((child, cIdx) => (
+              <Link key={cIdx} to={child.path} className="directory-card">
+                <div className="directory-card-top">
+                  <span className="directory-icon"><Layers size={18} /></span>
+                  <span className="directory-badge">Перейти →</span>
+                </div>
+                <h3 className="directory-title">{child.title}</h3>
+                {child.children && child.children.length > 0 && (
+                  <div className="directory-sub-pills">
+                    {child.children.slice(0, 3).map((sub, sIdx) => (
+                      <span key={sIdx} className="sub-pill">{sub.title}</span>
+                    ))}
+                    {child.children.length > 3 && (
+                      <span className="sub-pill more">+{child.children.length - 3}</span>
+                    )}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Основний вміст з таблицями, текстом та відео (якщо він є і не є пустим) */}
+      {(!isParentCategory || !isShortContent || (cleanedContent && cleanedContent.includes('<video'))) && (
+        <div 
+          className="page-html-content"
+          dangerouslySetInnerHTML={{ __html: cleanedContent }}
+          onClick={handleContentClick}
+        />
+      )}
 
       {/* Офіційні прикріплені документи (з можливістю перегляду або завантаження) */}
       {data.documents && data.documents.length > 0 && (
@@ -201,9 +260,111 @@ export default function GenericPage() {
 
       <style>{`
         .generic-page {
-          padding: 2rem 1rem 4rem;
-          max-width: 960px;
-          margin: 0 auto;
+          padding-top: 2rem;
+          padding-bottom: 4rem;
+          width: 100%;
+        }
+
+        .directory-hub-section {
+          margin: 1.5rem 0 2.5rem;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-lg);
+          padding: 1.75rem;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .hub-header-title {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+          margin-bottom: 0.35rem;
+        }
+
+        .hub-icon {
+          color: var(--primary);
+        }
+
+        .directory-hub-header h2 {
+          font-size: 1.35rem;
+          color: var(--text-main);
+          margin: 0;
+        }
+
+        .directory-hub-header p {
+          color: var(--text-muted);
+          font-size: 0.9rem;
+          margin: 0 0 1.25rem 0;
+        }
+
+        .directory-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 1rem;
+        }
+
+        .directory-card {
+          background: var(--bg-muted);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 1.15rem;
+          text-decoration: none;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .directory-card:hover {
+          transform: translateY(-2px);
+          border-color: var(--primary);
+          box-shadow: var(--shadow-md);
+          background: var(--bg-surface);
+        }
+
+        .directory-card-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .directory-icon {
+          color: var(--primary);
+        }
+
+        .directory-badge {
+          font-size: 0.775rem;
+          font-weight: 700;
+          color: var(--primary);
+        }
+
+        .directory-title {
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--text-main);
+          margin: 0;
+          line-height: 1.35;
+        }
+
+        .directory-sub-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.35rem;
+          margin-top: 0.25rem;
+        }
+
+        .sub-pill {
+          font-size: 0.725rem;
+          padding: 0.15rem 0.45rem;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-xs);
+          color: var(--text-muted);
+        }
+
+        .sub-pill.more {
+          color: var(--primary);
+          font-weight: 700;
         }
 
         .breadcrumbs-nav {

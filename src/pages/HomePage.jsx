@@ -34,13 +34,17 @@ export default function HomePage() {
               Відокремлений структурний підрозділ. Провідний заклад фахової передвищої освіти Житомирщини: 8 акредитованих спеціальностей, інноваційні лабораторії, військова кафедра та гарантоване працевлаштування.
             </p>
             <div className="hero-buttons">
-              <Link to="/rozklad-zanyat/rozklad-zanyat" className="btn btn-primary">
-                <Calendar size={16} />
-                <span>Розклад та дзвінки</span>
-              </Link>
-              <Link to="/abituriyentu/vstup" className="btn btn-outline">
+              <Link to="/abituriyentu/vstup" className="btn btn-primary">
                 <BookOpen size={16} />
                 <span>Вступнику 2026</span>
+              </Link>
+              <Link to="/rozklad-zanyat/rozklad-zanyat" className="btn btn-hero-glass">
+                <Calendar size={16} />
+                <span>Розклад та заміни</span>
+              </Link>
+              <Link to="/osvitnya-diyalnist/specialnosti" className="btn btn-hero-glass">
+                <Users size={16} />
+                <span>Спеціальності</span>
               </Link>
             </div>
           </div>
@@ -48,15 +52,15 @@ export default function HomePage() {
           <div className="hero-stats">
             <div className="stat-card">
               <span className="stat-number">1903</span>
-              <span className="stat-label">Рік заснування закладу</span>
+              <span className="stat-label">Рік заснування</span>
             </div>
             <div className="stat-card">
               <span className="stat-number">8</span>
-              <span className="stat-label">Сучасних спеціальностей</span>
+              <span className="stat-label">Спеціальностей</span>
             </div>
             <div className="stat-card">
               <span className="stat-number">100%</span>
-              <span className="stat-label">Забезпечення гуртожитком</span>
+              <span className="stat-label">Гуртожиток</span>
             </div>
           </div>
         </div>
@@ -345,20 +349,29 @@ export default function HomePage() {
         }
 
         .hero-banner {
-          background: linear-gradient(135deg, #f0f7ff 0%, #e0effe 50%, #ffffff 100%);
-          border-bottom: 1px solid var(--border-color);
+          position: relative;
+          background: 
+            linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 58, 138, 0.82) 55%, rgba(15, 23, 42, 0.90) 100%),
+            url('/images/college-hero.jpg');
+          background-size: cover;
+          background-position: center 35%;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
           padding: 4.5rem 0 3.5rem;
-          transition: background var(--transition-base, 0.2s);
+          color: #ffffff;
         }
 
         [data-theme='dark'] .hero-banner {
-          background: linear-gradient(135deg, #070b14 0%, #0d1629 55%, #080d19 100%);
+          background: 
+            linear-gradient(135deg, rgba(6, 10, 20, 0.94) 0%, rgba(15, 23, 42, 0.90) 55%, rgba(6, 10, 20, 0.95) 100%),
+            url('/images/college-hero.jpg');
+          background-size: cover;
+          background-position: center 35%;
           border-bottom: 1px solid var(--border-color);
         }
 
         .hero-container {
           display: grid;
-          grid-template-columns: 1.6fr 1fr;
+          grid-template-columns: 1.55fr 1fr;
           gap: 3rem;
           align-items: center;
         }
@@ -367,9 +380,11 @@ export default function HomePage() {
           display: inline-flex;
           align-items: center;
           gap: 0.45rem;
-          background: var(--primary-subtle);
-          color: var(--primary);
-          border: 1px solid rgba(37, 99, 235, 0.25);
+          background: rgba(255, 255, 255, 0.14);
+          color: #93c5fd;
+          border: 1px solid rgba(147, 197, 253, 0.35);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
           padding: 0.35rem 0.85rem;
           border-radius: 9999px;
           font-size: 0.8rem;
@@ -382,19 +397,21 @@ export default function HomePage() {
           font-weight: 800;
           line-height: 1.2;
           margin-bottom: 1.25rem;
-          color: var(--text-main);
+          color: #ffffff;
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
         }
 
         .hero-desc {
           font-size: 1.05rem;
           line-height: 1.6;
-          color: var(--text-muted);
+          color: #e2e8f0;
           margin-bottom: 2rem;
+          text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
         }
 
         .hero-buttons {
           display: flex;
-          gap: 1rem;
+          gap: 0.85rem;
           flex-wrap: wrap;
         }
 
@@ -415,13 +432,29 @@ export default function HomePage() {
           background: var(--primary);
           color: #ffffff !important;
           border: 1px solid var(--primary);
-          box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+          box-shadow: 0 4px 14px rgba(29, 78, 216, 0.35);
         }
 
         .btn-primary:hover {
           background: var(--primary-hover);
           transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
+          box-shadow: 0 6px 18px rgba(29, 78, 216, 0.45);
+        }
+
+        .btn-hero-glass {
+          background: rgba(255, 255, 255, 0.12);
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-hero-glass:hover {
+          background: rgba(255, 255, 255, 0.22);
+          border-color: rgba(255, 255, 255, 0.45);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
         }
 
         .btn-outline {
@@ -458,32 +491,36 @@ export default function HomePage() {
         }
 
         .stat-card {
-          background: var(--bg-surface);
-          border: 1px solid var(--border-color);
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.16);
           border-radius: var(--radius-md);
           padding: 1.25rem 1.5rem;
           display: flex;
           flex-direction: column;
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
           transition: transform 0.2s, box-shadow 0.2s;
         }
 
         .stat-card:hover {
           transform: translateY(-2px);
-          box-shadow: var(--shadow-md);
+          border-color: rgba(96, 165, 250, 0.45);
+          box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
         }
 
         .stat-number {
           font-size: 2.2rem;
           font-weight: 800;
-          color: var(--primary);
+          color: #60a5fa;
           line-height: 1.1;
         }
 
         .stat-label {
-          font-size: 0.85rem;
-          color: var(--text-muted);
+          font-size: 0.875rem;
+          color: #e2e8f0;
           margin-top: 0.35rem;
+          font-weight: 500;
         }
 
         /* Дошка оперативних оголошень */
@@ -1008,22 +1045,24 @@ export default function HomePage() {
           }
           .hero-stats {
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
+            gap: 0.75rem;
           }
           .stat-card {
-            padding: 0.85rem 0.5rem;
+            padding: 0.9rem 0.65rem;
+            text-align: center;
           }
           .stat-number {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
           }
           .stat-label {
-            font-size: 0.725rem;
+            font-size: 0.85rem;
+            line-height: 1.25;
           }
         }
 
         @media (max-width: 640px) {
           .hero-banner {
-            padding: 1.75rem 0 1.25rem;
+            padding: 2.25rem 0 1.75rem;
           }
           .hero-badge {
             font-size: 0.75rem;
@@ -1050,16 +1089,17 @@ export default function HomePage() {
           }
           .hero-stats {
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.4rem;
+            gap: 0.5rem;
           }
           .stat-card {
-            padding: 0.65rem 0.35rem;
+            padding: 0.75rem 0.4rem;
+            text-align: center;
           }
           .stat-number {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
           }
           .stat-label {
-            font-size: 0.65rem;
+            font-size: 0.8125rem;
             line-height: 1.2;
           }
           .notice-board-card {

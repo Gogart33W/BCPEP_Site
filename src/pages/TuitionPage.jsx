@@ -211,10 +211,12 @@ export default function TuitionPage() {
 
       <style>{`
         .tuition-page {
-          padding: 2.5rem 1rem 5rem;
+          padding-top: 2rem;
+          padding-bottom: 5rem;
           display: flex;
           flex-direction: column;
           gap: 2.5rem;
+          width: 100%;
         }
 
         .breadcrumbs-nav {
