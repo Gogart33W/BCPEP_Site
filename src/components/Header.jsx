@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Sun, Moon, Calendar, Search, User, Menu, X, 
-  ChevronDown 
+  ChevronDown, MapPin, Phone, Mail
 } from 'lucide-react';
-import { getCurrentPairInfo } from '../utils/scheduleParser';
+import { COLLEGE_INFO } from '../data/collegeData';
 
 export default function Header({ 
   theme, 
@@ -16,15 +16,6 @@ export default function Header({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
-  const [pairInfo, setPairInfo] = useState(getCurrentPairInfo());
-
-  // Оновлення поточної пари щохвилини
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setPairInfo(getCurrentPairInfo());
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
 
   const handleNavClick = (sectionId) => {
     onNavigate(sectionId);
@@ -34,20 +25,30 @@ export default function Header({
 
   return (
     <header className="site-header">
-      {/* Верхній статус-бар: актуальний статус та поточна пара */}
-      <div className="ticker-bar">
-        <div className="container ticker-container">
-          <div className="ticker-left">
-            <span className="ticker-badge">НАЖИВО</span>
-            <span className="ticker-text">
-              Формат навчання: <strong>1–2 курс — очно</strong> | <strong>3–4 курс — змішано</strong>
+      {/* Верхня панель контактів як на bfcpep.org.ua */}
+      <div className="top-contacts-bar">
+        <div className="container top-contacts-container">
+          <div className="top-contacts-left">
+            <span className="contact-item">
+              <MapPin size={13} />
+              <span>{COLLEGE_INFO.address}</span>
             </span>
+            <span className="contact-divider">•</span>
+            <a href={`tel:${COLLEGE_INFO.phoneReception}`} className="contact-item">
+              <Phone size={13} />
+              <span>{COLLEGE_INFO.phoneReception}</span>
+            </a>
+            <span className="contact-divider">•</span>
+            <a href={`mailto:${COLLEGE_INFO.email}`} className="contact-item">
+              <Mail size={13} />
+              <span>{COLLEGE_INFO.email}</span>
+            </a>
           </div>
-          <div className="ticker-right">
-            <span className="pair-indicator">
-              <span className="pair-dot"></span>
-              {pairInfo.text}
-            </span>
+
+          <div className="top-contacts-right">
+            <a href={COLLEGE_INFO.telegram} target="_blank" rel="noreferrer" className="social-top-link">Telegram</a>
+            <a href={COLLEGE_INFO.social.facebook} target="_blank" rel="noreferrer" className="social-top-link">Facebook</a>
+            <a href={COLLEGE_INFO.social.instagram} target="_blank" rel="noreferrer" className="social-top-link">Instagram</a>
           </div>
         </div>
       </div>
@@ -55,16 +56,23 @@ export default function Header({
       {/* Основна шапка */}
       <div className="main-navbar">
         <div className="container nav-container">
-          {/* Логотип */}
+          {/* Офіційний логотип коледжу */}
           <div className="nav-brand" onClick={() => handleNavClick('home')}>
-            <img src="/logo.svg" alt="БФКПЕП Логотип" className="brand-logo" />
+            <img 
+              src="https://www.bfcpep.org.ua/wp-content/uploads/2025/09/berdychivskyj-fahovyj-koledzh-promyslovosti-ekonomiky-ta-prava-2.png" 
+              alt="Бердичівський фаховий коледж промисловості, економіки та права" 
+              className="brand-logo-img" 
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
             <div className="brand-text">
               <span className="brand-acronym">ВСП «БФКПЕП»</span>
-              <span className="brand-subtitle">Бердичівський коледж промисловості, економіки та права</span>
+              <span className="brand-subtitle">Бердичівський фаховий коледж промисловості, економіки та права</span>
             </div>
           </div>
 
-          {/* Десктопне навігаційне меню */}
+          {/* Десктопне меню коледжу 1-в-1 */}
           <nav className="nav-links">
             <button 
               className={`nav-link ${activeSection === 'home' ? 'active' : ''}`}
@@ -80,21 +88,29 @@ export default function Header({
               onMouseLeave={() => setActiveDropdown(null)}
             >
               <button className="nav-link dropdown-toggle">
-                Про коледж <ChevronDown size={15} />
+                Про коледж <ChevronDown size={14} />
               </button>
               {activeDropdown === 'about' && (
                 <div className="dropdown-menu">
+                  <div className="dropdown-item" onClick={() => handleNavClick('history')}>
+                    <strong>Історія коледжу</strong>
+                    <span>Заснування та традиції</span>
+                  </div>
                   <div className="dropdown-item" onClick={() => handleNavClick('administration')}>
                     <strong>Керівний склад</strong>
                     <span>Дирекція коледжу</span>
                   </div>
-                  <div className="dropdown-item" onClick={() => handleNavClick('history')}>
-                    <strong>Історія та традиції</strong>
-                    <span>85+ років інженерної школи</span>
+                  <div className="dropdown-item" onClick={() => handleNavClick('administration')}>
+                    <strong>Циклові комісії</strong>
+                    <span>Викладацький склад</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleNavClick('specialties')}>
+                    <strong>Відділення та підрозділи</strong>
+                    <span>Бібліотека, майстерні</span>
                   </div>
                   <div className="dropdown-item" onClick={() => handleNavClick('contacts')}>
-                    <strong>Контакти та локація</strong>
-                    <span>м. Бердичів, вул. Замкова, 2а</span>
+                    <strong>Контакти</strong>
+                    <span>Адреса та реквізити</span>
                   </div>
                 </div>
               )}
@@ -107,17 +123,25 @@ export default function Header({
               onMouseLeave={() => setActiveDropdown(null)}
             >
               <button className="nav-link dropdown-toggle">
-                Спеціальності <ChevronDown size={15} />
+                Освітня діяльність <ChevronDown size={14} />
               </button>
               {activeDropdown === 'education' && (
                 <div className="dropdown-menu">
                   <div className="dropdown-item" onClick={() => handleNavClick('specialties')}>
-                    <strong>Всі 8 спеціальностей</strong>
-                    <span>ІПЗ, Машинобудування, Менеджмент тощо</span>
+                    <strong>Спеціальності (8 напрямів)</strong>
+                    <span>ІПЗ, Машинобудування, Економіка тощо</span>
                   </div>
                   <div className="dropdown-item" onClick={() => handleNavClick('specialties')}>
-                    <strong>121 Інженерія програмного забезпечення</strong>
-                    <span>ІТ-відділення та розробка</span>
+                    <strong>Освітньо-професійні програми (ОПП)</strong>
+                    <span>Стандарти освіти</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleNavClick('schedule')}>
+                    <strong>Графік освітнього процесу</strong>
+                    <span>Семестри та сесії</span>
+                  </div>
+                  <div className="dropdown-item" onClick={() => handleNavClick('transparency')}>
+                    <strong>Якість освіти та моніторинг</strong>
+                    <span>Результати та звіти</span>
                   </div>
                 </div>
               )}
@@ -139,47 +163,50 @@ export default function Header({
               Вступнику
             </button>
 
-            {/* Кілер-фіча: Розклад і заміни */}
+            {/* Студенту */}
+            <button 
+              className={`nav-link ${activeSection === 'student' ? 'active' : ''}`}
+              onClick={() => handleNavClick('student')}
+            >
+              Студенту
+            </button>
+
+            {/* Розклад */}
             <button 
               className={`nav-link schedule-cta ${activeSection === 'schedule' ? 'active' : ''}`}
               onClick={() => handleNavClick('schedule')}
             >
-              <Calendar size={16} />
-              <span>Розклад та Заміни</span>
-              <span className="pulse-indicator"></span>
+              <Calendar size={15} />
+              <span>Розклад</span>
             </button>
           </nav>
 
-          {/* Панель дій праворуч */}
+          {/* Панель дій */}
           <div className="nav-actions">
-            {/* Пошук */}
             <button 
               className="action-btn" 
               onClick={onOpenSearch}
-              title="Швидкий пошук по сайту"
+              title="Пошук по сайту"
             >
               <Search size={18} />
             </button>
 
-            {/* Перемикач теми */}
             <button 
               className="action-btn" 
               onClick={onToggleTheme}
-              title={theme === 'dark' ? 'Увімкнути світлу тему' : 'Увімкнути темну тему'}
+              title="Змінити тему"
             >
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
 
-            {/* Кабінет студента */}
             <button 
               className="btn btn-primary btn-sm student-btn"
               onClick={onOpenCabinet}
             >
-              <User size={16} />
-              <span>{currentUser ? currentUser.name : 'Кабінет студента'}</span>
+              <User size={15} />
+              <span>{currentUser ? currentUser.name : 'Кабінет'}</span>
             </button>
 
-            {/* Бургер для мобільних */}
             <button 
               className="mobile-burger"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -196,16 +223,17 @@ export default function Header({
           <div className="mobile-drawer-content">
             <button className="mobile-link" onClick={() => handleNavClick('home')}>Головна</button>
             <button className="mobile-link schedule-highlight" onClick={() => handleNavClick('schedule')}>
-              ⚡ Розклад занять та Заміни
+              📅 Розклад занять та заміни
             </button>
-            <button className="mobile-link" onClick={() => handleNavClick('specialties')}>Спеціальності коледжу</button>
-            <button className="mobile-link" onClick={() => handleNavClick('transparency')}>Прозорість (Статут, Ліцензії)</button>
-            <button className="mobile-link" onClick={() => handleNavClick('admissions')}>Вступнику 2026</button>
-            <button className="mobile-link" onClick={() => handleNavClick('administration')}>Керівництво коледжу</button>
+            <button className="mobile-link" onClick={() => handleNavClick('specialties')}>Спеціальності (8 напрямів)</button>
+            <button className="mobile-link" onClick={() => handleNavClick('transparency')}>Прозорість та публічна інформація</button>
+            <button className="mobile-link" onClick={() => handleNavClick('admissions')}>Вступнику</button>
+            <button className="mobile-link" onClick={() => handleNavClick('student')}>Студенту (Рейтинги, Гуртожиток)</button>
+            <button className="mobile-link" onClick={() => handleNavClick('administration')}>Керівний склад</button>
             <button className="mobile-link" onClick={() => handleNavClick('contacts')}>Контакти</button>
             <button className="btn btn-primary btn-block" onClick={() => { setMobileMenuOpen(false); onOpenCabinet(); }}>
               <User size={16} />
-              Вхід у корпоративний кабінет
+              Кабінет студента
             </button>
           </div>
         </div>
@@ -218,82 +246,85 @@ export default function Header({
           z-index: 1000;
           background: var(--bg-surface);
           border-bottom: 1px solid var(--border-color);
-          backdrop-filter: blur(12px);
         }
 
-        .ticker-bar {
+        .top-contacts-bar {
           background: var(--bg-muted);
           border-bottom: 1px solid var(--border-color);
           font-size: 0.775rem;
-          padding: 0.35rem 0;
           color: var(--text-muted);
+          padding: 0.4rem 0;
         }
 
-        .ticker-container {
+        .top-contacts-container {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          flex-wrap: wrap;
-          gap: 0.5rem;
+          gap: 1rem;
         }
 
-        .ticker-left {
+        .top-contacts-left {
           display: flex;
           align-items: center;
-          gap: 0.6rem;
+          gap: 0.75rem;
+          flex-wrap: wrap;
         }
 
-        .ticker-badge {
-          background: var(--accent-emerald);
-          color: #fff;
-          font-size: 0.65rem;
-          font-weight: 800;
-          padding: 0.1rem 0.45rem;
-          border-radius: var(--radius-full);
-          letter-spacing: 0.05em;
-        }
-
-        .pair-indicator {
+        .contact-item {
           display: inline-flex;
           align-items: center;
-          gap: 0.4rem;
-          font-weight: 600;
+          gap: 0.35rem;
+          color: var(--text-muted);
+          text-decoration: none;
+        }
+
+        .contact-item:hover {
           color: var(--primary);
         }
 
-        .pair-dot {
-          width: 8px;
-          height: 8px;
-          background: var(--primary);
-          border-radius: 50%;
-          display: inline-block;
-          box-shadow: 0 0 6px var(--primary);
+        .contact-divider {
+          color: var(--border-color);
+        }
+
+        .top-contacts-right {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .social-top-link {
+          color: var(--text-muted);
+          text-decoration: none;
+          font-weight: 600;
+        }
+
+        .social-top-link:hover {
+          color: var(--primary);
         }
 
         .main-navbar {
-          height: var(--header-height);
-          display: flex;
-          align-items: center;
+          padding: 0.75rem 0;
         }
 
         .nav-container {
           display: flex;
-          align-items: center;
           justify-content: space-between;
+          align-items: center;
+          gap: 1.5rem;
         }
 
         .nav-brand {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.85rem;
           cursor: pointer;
-          user-select: none;
+          flex-shrink: 0;
         }
 
-        .brand-logo {
-          width: 44px;
-          height: 44px;
-          border-radius: 10px;
+        .brand-logo-img {
+          height: 48px;
+          width: auto;
+          object-fit: contain;
         }
 
         .brand-text {
@@ -302,61 +333,59 @@ export default function Header({
         }
 
         .brand-acronym {
-          font-family: var(--font-heading);
+          font-size: 1.15rem;
           font-weight: 800;
-          font-size: 1.25rem;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.01em;
           color: var(--text-main);
-          line-height: 1.1;
+          line-height: 1.2;
         }
 
         .brand-subtitle {
-          font-size: 0.725rem;
+          font-size: 0.75rem;
           color: var(--text-muted);
-          max-width: 250px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          max-width: 280px;
+          line-height: 1.2;
         }
 
         .nav-links {
           display: flex;
           align-items: center;
-          gap: 1.5rem;
+          gap: 0.4rem;
         }
 
         .nav-link {
-          font-size: 0.925rem;
-          font-weight: 500;
+          padding: 0.45rem 0.75rem;
+          font-size: 0.875rem;
+          font-weight: 600;
           color: var(--text-muted);
-          transition: color 0.15s ease;
-          display: inline-flex;
-          align-items: center;
-          gap: 0.25rem;
+          border-radius: var(--radius-sm);
+          transition: all 0.15s ease;
+          background: transparent;
         }
 
-        .nav-link:hover, .nav-link.active {
+        .nav-link:hover {
+          color: var(--text-main);
+          background: var(--bg-hover);
+        }
+
+        .nav-link.active {
           color: var(--primary);
+          background: var(--primary-subtle);
         }
 
         .schedule-cta {
           color: var(--primary);
-          font-weight: 700;
           background: var(--primary-subtle);
-          padding: 0.45rem 0.85rem;
-          border-radius: var(--radius-md);
-          position: relative;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-weight: 700;
         }
 
-        .pulse-indicator {
-          width: 6px;
-          height: 6px;
-          background: var(--accent-rose);
-          border-radius: 50%;
-          position: absolute;
-          top: 6px;
-          right: 6px;
-          animation: pulseGlow 1.5s infinite ease-in-out;
+        .dropdown-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
         }
 
         .nav-dropdown {
@@ -367,34 +396,38 @@ export default function Header({
           position: absolute;
           top: 100%;
           left: 0;
-          margin-top: 0.5rem;
+          width: 260px;
           background: var(--bg-surface-elevated);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
           box-shadow: var(--shadow-lg);
           padding: 0.5rem;
-          min-width: 260px;
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
+          z-index: 100;
           animation: fadeIn 0.15s ease-out;
         }
 
         .dropdown-item {
-          padding: 0.6rem 0.8rem;
+          padding: 0.6rem 0.75rem;
           border-radius: var(--radius-sm);
           cursor: pointer;
-          display: flex;
-          flex-direction: column;
+          transition: background 0.15s ease;
         }
+
         .dropdown-item:hover {
           background: var(--bg-hover);
         }
+
         .dropdown-item strong {
-          font-size: 0.875rem;
+          display: block;
+          font-size: 0.85rem;
           color: var(--text-main);
         }
+
         .dropdown-item span {
+          display: block;
           font-size: 0.75rem;
           color: var(--text-muted);
         }
@@ -402,39 +435,78 @@ export default function Header({
         .nav-actions {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.6rem;
         }
 
         .action-btn {
-          width: 38px;
-          height: 38px;
+          width: 36px;
+          height: 36px;
+          border-radius: var(--radius-sm);
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: var(--radius-md);
           color: var(--text-muted);
+          background: var(--bg-muted);
           border: 1px solid var(--border-color);
-          background: var(--bg-surface);
           transition: all 0.15s ease;
         }
+
         .action-btn:hover {
           color: var(--text-main);
           border-color: var(--border-subtle);
-          background: var(--bg-muted);
+        }
+
+        .student-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-weight: 600;
+          padding: 0.45rem 0.85rem;
+          font-size: 0.825rem;
         }
 
         .mobile-burger {
           display: none;
           color: var(--text-main);
+          padding: 0.25rem;
         }
 
         .mobile-drawer {
-          display: none;
+          position: fixed;
+          top: 90px;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.6);
+          z-index: 999;
+          animation: fadeIn 0.15s ease-out;
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(4px); }
-          to { opacity: 1; transform: translateY(0); }
+        .mobile-drawer-content {
+          background: var(--bg-surface);
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          border-bottom: 1px solid var(--border-color);
+        }
+
+        .mobile-link {
+          text-align: left;
+          padding: 0.75rem;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text-main);
+          border-radius: var(--radius-sm);
+        }
+
+        .mobile-link:hover {
+          background: var(--bg-hover);
+        }
+
+        .schedule-highlight {
+          color: var(--primary);
+          background: var(--primary-subtle);
         }
 
         @media (max-width: 1024px) {
@@ -442,33 +514,19 @@ export default function Header({
             display: none;
           }
           .mobile-burger {
-            display: flex;
-          }
-          .mobile-drawer {
             display: block;
-            border-top: 1px solid var(--border-color);
-            background: var(--bg-surface);
-            padding: 1.25rem;
           }
-          .mobile-drawer-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
+          .top-contacts-left span:nth-child(n+4) {
+            display: none;
           }
-          .mobile-link {
-            text-align: left;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--text-main);
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 640px) {
+          .top-contacts-bar {
+            display: none;
           }
-          .mobile-link.schedule-highlight {
-            color: var(--primary);
-            font-weight: 700;
-          }
-          .btn-block {
-            width: 100%;
+          .brand-subtitle {
+            display: none;
           }
         }
       `}</style>

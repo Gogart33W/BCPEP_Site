@@ -1,6 +1,5 @@
 import { BELL_SCHEDULE } from '../data/collegeData';
 
-// Парсер сирого тексту замін (наприклад, з диспетчерської)
 export function parseRawSubstitutions(rawText) {
   if (!rawText || typeof rawText !== 'string') return [];
 
@@ -8,9 +7,7 @@ export function parseRawSubstitutions(rawText) {
   const parsed = [];
 
   lines.forEach((line, index) => {
-    // Приклад формату:
-    // ПЗ-41 | 2 пара | Бази даних -> Хмарні обчислення | Пелихівський Л.О. | ауд. 34
-    // Або спрощений: ПЗ-41: 2 пара замість Фізика буде Програмування ауд 34
+    // Формат: П-422 | 2 пара | Бази даних -> Хмарні технології | Пелихівський Л.О. | ауд. 34
     const parts = line.split('|').map(p => p.trim());
     if (parts.length >= 3) {
       const group = parts[0].toUpperCase().replace(/\s+/g, '-');
@@ -35,14 +32,13 @@ export function parseRawSubstitutions(rawText) {
         meetUrl: ''
       });
     } else {
-      // Спроба розбору за ключовими словами
-      const groupMatch = line.match(/(ПЗ-\d+|М-\d+|О-\d+|Ф-\d+|МБ-\d+|ФВ-\d+|Т-\d+)/i);
+      const groupMatch = line.match(/([ПАЕФЮМТЛ]|ЛХЛ|ФВ|МХ|ТКТ)-\d+/i);
       const pairMatch = line.match(/(\d+)\s*пара/i);
 
       if (groupMatch && pairMatch) {
         parsed.push({
           id: `custom-sub-${Date.now()}-${index}`,
-          group: groupMatch[1].toUpperCase(),
+          group: groupMatch[0].toUpperCase(),
           day: new Date().getDay() || 1,
           pair: parseInt(pairMatch[1], 10),
           oldSubject: 'Пара за розкладом',
@@ -59,15 +55,11 @@ export function parseRawSubstitutions(rawText) {
   return parsed;
 }
 
-// Об'єднання базового розкладу з замінами
 export function getMergedSchedule(baseSchedule, substitutions, groupId, dayNumber) {
   const groupSchedule = (baseSchedule[groupId] && baseSchedule[groupId][String(dayNumber)]) || [];
   
-  // Клонуємо розклад для модифікацій
   const result = BELL_SCHEDULE.map(bell => {
-    // Шукаємо базову пару
     const basePair = groupSchedule.find(p => p.pair === bell.pair);
-    // Шукаємо активну заміну на цей день і пару
     const sub = substitutions.find(
       s => (s.group === groupId || s.group.replace('-', '') === groupId.replace('-', '')) &&
            Number(s.day) === Number(dayNumber) &&
@@ -104,7 +96,6 @@ export function getMergedSchedule(baseSchedule, substitutions, groupId, dayNumbe
       };
     }
 
-    // Вікно
     return {
       pair: bell.pair,
       time: `${bell.start} – ${bell.end}`,
@@ -122,7 +113,6 @@ export function getMergedSchedule(baseSchedule, substitutions, groupId, dayNumbe
   return result;
 }
 
-// Визначення поточної пари в реальному часі
 export function getCurrentPairInfo() {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();

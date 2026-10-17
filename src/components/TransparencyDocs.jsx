@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { OFFICIAL_DOCUMENTS } from '../data/collegeData';
-import { FileText, Download, Search, ShieldCheck, Filter, ExternalLink } from 'lucide-react';
+import { FileText, Download, Search } from 'lucide-react';
 
 const CATEGORIES = [
   'Всі документи',

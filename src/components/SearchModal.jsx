@@ -40,7 +40,7 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
           <input
             ref={inputRef}
             type="text"
-            placeholder="Введіть групу (ПЗ-41), викладача, спеціальність чи документ..."
+            placeholder="Введіть групу (П-422), викладача, спеціальність чи документ..."
             value={query}
             onChange={e => setQuery(e.target.value)}
             className="search-modal-input"
@@ -53,7 +53,7 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
             <div className="search-hints">
               <span className="hint-title">Популярні пошукові запити:</span>
               <div className="hint-tags">
-                <button className="hint-tag" onClick={() => setQuery('ПЗ-41')}>Група ПЗ-41</button>
+                <button className="hint-tag" onClick={() => setQuery('П-422')}>Група П-422</button>
                 <button className="hint-tag" onClick={() => setQuery('Пелихівський')}>Пелихівський</button>
                 <button className="hint-tag" onClick={() => setQuery('121')}>121 Інженерія ПЗ</button>
                 <button className="hint-tag" onClick={() => setQuery('Статут')}>Статут коледжу</button>

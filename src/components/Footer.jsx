@@ -1,6 +1,6 @@
 import React from 'react';
-import { COLLEGE_INFO } from '../data/collegeData';
-import { MapPin, Phone, Mail, ExternalLink, ShieldCheck } from 'lucide-react';
+import { COLLEGE_INFO, USEFUL_LINKS } from '../data/collegeData';
+import { MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
 
 export default function Footer({ onNavigate }) {
   return (
@@ -10,60 +10,61 @@ export default function Footer({ onNavigate }) {
           {/* Інформація про заклад */}
           <div className="footer-col-main">
             <div className="footer-brand">
-              <img src="/logo.svg" alt="БФКПЕП Логотип" className="footer-logo" />
+              <img 
+                src="https://www.bfcpep.org.ua/wp-content/uploads/2025/09/berdychivskyj-fahovyj-koledzh-promyslovosti-ekonomiky-ta-prava-2.png" 
+                alt="БФКПЕП Логотип" 
+                className="footer-logo"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
               <div>
                 <span className="footer-acronym">ВСП «БФКПЕП»</span>
-                <span className="footer-tagline">Якісна фахова передвища освіта</span>
+                <span className="footer-tagline">Бердичівський коледж промисловості, економіки та права</span>
               </div>
             </div>
             <p className="footer-desc">
-              {COLLEGE_INFO.fullName}. Акредитований державний заклад освіти, що готує сучасних фахівців інженерних, цифрових та управлінських галузей.
+              {COLLEGE_INFO.fullName}. Акредитований державний заклад фахової передвищої освіти.
             </p>
             <div className="footer-socials">
+              <a href={COLLEGE_INFO.telegram} target="_blank" rel="noreferrer" className="social-btn" title="Telegram">
+                TG
+              </a>
               <a href={COLLEGE_INFO.social.facebook} target="_blank" rel="noreferrer" className="social-btn" title="Facebook">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                </svg>
+                FB
               </a>
               <a href={COLLEGE_INFO.social.instagram} target="_blank" rel="noreferrer" className="social-btn" title="Instagram">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-                </svg>
+                IG
               </a>
               <a href={COLLEGE_INFO.social.youtube} target="_blank" rel="noreferrer" className="social-btn" title="YouTube">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
-                  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
-                </svg>
+                YT
               </a>
             </div>
           </div>
 
-          {/* Розділи сайту */}
+          {/* Корисні посилання (МОН, ЄДЕБО тощо) */}
           <div className="footer-col">
-            <h4 className="footer-col-title">Навігація</h4>
+            <h4 className="footer-col-title">Корисні посилання</h4>
             <ul className="footer-links">
-              <li><button onClick={() => onNavigate('home')}>Головна сторінка</button></li>
-              <li><button onClick={() => onNavigate('schedule')}>⚡ Розклад і заміни</button></li>
-              <li><button onClick={() => onNavigate('specialties')}>Спеціальності</button></li>
-              <li><button onClick={() => onNavigate('transparency')}>Прозорість (документи)</button></li>
-              <li><button onClick={() => onNavigate('admissions')}>Вступнику 2026</button></li>
-              <li><button onClick={() => onNavigate('administration')}>Керівний склад</button></li>
+              {USEFUL_LINKS.map(link => (
+                <li key={link.name}>
+                  <a href={link.url} target="_blank" rel="noreferrer" className="external-footer-link">
+                    <span>{link.name}</span>
+                    <ExternalLink size={12} />
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Спеціальності */}
+          {/* Навігація сайту */}
           <div className="footer-col">
-            <h4 className="footer-col-title">Провідні програми</h4>
+            <h4 className="footer-col-title">Розділи порталу</h4>
             <ul className="footer-links">
-              <li><button onClick={() => onNavigate('specialties')}>121 Інженерія ПЗ</button></li>
-              <li><button onClick={() => onNavigate('specialties')}>133 Галузеве машинобудування</button></li>
-              <li><button onClick={() => onNavigate('specialties')}>073 Менеджмент</button></li>
-              <li><button onClick={() => onNavigate('specialties')}>071 Облік і оподаткування</button></li>
-              <li><button onClick={() => onNavigate('specialties')}>072 Фінанси та банківська справа</button></li>
-              <li><button onClick={() => onNavigate('specialties')}>017 Фізична культура і спорт</button></li>
+              <li><button onClick={() => onNavigate('home')}>Головна</button></li>
+              <li><button onClick={() => onNavigate('schedule')}>Розклад занять</button></li>
+              <li><button onClick={() => onNavigate('specialties')}>Спеціальності</button></li>
+              <li><button onClick={() => onNavigate('admissions')}>Вступнику 2026</button></li>
+              <li><button onClick={() => onNavigate('transparency')}>Прозорість (документи)</button></li>
+              <li><button onClick={() => onNavigate('administration')}>Керівний склад</button></li>
             </ul>
           </div>
 
@@ -93,19 +94,21 @@ export default function Footer({ onNavigate }) {
                 <Mail size={16} className="c-icon" />
                 <a href={`mailto:${COLLEGE_INFO.email}`}>{COLLEGE_INFO.email}</a>
               </div>
+              <div className="contact-row">
+                <Mail size={16} className="c-icon" />
+                <a href={`mailto:${COLLEGE_INFO.emailAdmissions}`}>{COLLEGE_INFO.emailAdmissions}</a>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Нижній підвал */}
+        {/* Нижній копірайт */}
         <div className="footer-bottom">
           <div className="footer-bottom-text">
-            <span>© 2026 ВСП «БФКПЕП». Всі права захищено.</span>
-            <span className="divider">•</span>
-            <span>Дипломний проєкт: Інформаційно-комунікаційна веб-платформа коледжу з інтегрованою системою динамічного розкладу</span>
+            <span>© 2026 ВСП «БФКПЕП». Офіційний сайт коледжу.</span>
           </div>
           <div className="developer-tag">
-            <span>Розробник: Gogart (ПЗ-41) • Керівник: Пелихівський Л.О.</span>
+            <span>Студентський проєкт: Микола (П-422) • Керівник: Пелихівський Л.О.</span>
           </div>
         </div>
       </div>
@@ -115,14 +118,14 @@ export default function Footer({ onNavigate }) {
           background: #090d16;
           color: #94a3b8;
           border-top: 1px solid #1e293b;
-          padding: 4.5rem 0 2rem;
+          padding: 4rem 0 2rem;
         }
 
         .footer-grid {
           display: grid;
-          grid-template-columns: 1.5fr 1fr 1fr 1.3fr;
+          grid-template-columns: 1.4fr 1.3fr 1fr 1.3fr;
           gap: 2.5rem;
-          margin-bottom: 3.5rem;
+          margin-bottom: 3rem;
         }
 
         .footer-brand {
@@ -133,14 +136,14 @@ export default function Footer({ onNavigate }) {
         }
 
         .footer-logo {
-          width: 40px;
-          height: 40px;
+          height: 44px;
+          width: auto;
+          object-fit: contain;
         }
 
         .footer-acronym {
-          font-family: var(--font-heading);
           font-weight: 800;
-          font-size: 1.2rem;
+          font-size: 1.15rem;
           color: #f8fafc;
           display: block;
         }
@@ -170,44 +173,55 @@ export default function Footer({ onNavigate }) {
           display: flex;
           align-items: center;
           justify-content: center;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-decoration: none;
           transition: all 0.15s ease;
         }
         .social-btn:hover {
-          background: #3b82f6;
-          transform: translateY(-2px);
+          background: var(--primary);
         }
 
         .footer-col-title {
           font-size: 0.95rem;
-          font-weight: 700;
           color: #f8fafc;
+          font-weight: 700;
           margin-bottom: 1.25rem;
-          letter-spacing: -0.01em;
         }
 
         .footer-links {
           list-style: none;
+          padding: 0;
+          margin: 0;
           display: flex;
           flex-direction: column;
-          gap: 0.65rem;
+          gap: 0.6rem;
         }
 
-        .footer-links button {
-          font-size: 0.85rem;
+        .footer-links button, .external-footer-link {
           color: #94a3b8;
+          font-size: 0.825rem;
           text-align: left;
+          background: none;
+          border: none;
           padding: 0;
+          cursor: pointer;
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
           transition: color 0.15s ease;
         }
-        .footer-links button:hover {
-          color: #3b82f6;
+
+        .footer-links button:hover, .external-footer-link:hover {
+          color: #fff;
         }
 
         .footer-contact-items {
           display: flex;
           flex-direction: column;
-          gap: 0.85rem;
-          font-size: 0.85rem;
+          gap: 0.75rem;
+          font-size: 0.825rem;
         }
 
         .contact-row {
@@ -217,69 +231,49 @@ export default function Footer({ onNavigate }) {
         }
 
         .c-icon {
-          color: #3b82f6;
-          flex-shrink: 0;
+          color: var(--primary);
           margin-top: 0.15rem;
+          flex-shrink: 0;
         }
 
         .contact-row a {
-          color: #f8fafc;
+          color: #94a3b8;
+          text-decoration: none;
         }
         .contact-row a:hover {
-          color: #3b82f6;
+          color: #fff;
         }
 
         .c-sub {
-          font-size: 0.75rem;
           color: #64748b;
+          font-size: 0.75rem;
         }
 
         .footer-bottom {
-          padding-top: 2rem;
+          padding-top: 1.5rem;
           border-top: 1px solid #1e293b;
           display: flex;
           justify-content: space-between;
           align-items: center;
           font-size: 0.775rem;
+          color: #64748b;
           flex-wrap: wrap;
           gap: 1rem;
         }
 
-        .footer-bottom-text {
-          display: flex;
-          align-items: center;
-          gap: 0.6rem;
-          flex-wrap: wrap;
-        }
-
-        .divider {
-          color: #475569;
-        }
-
         .developer-tag {
-          color: #cbd5e1;
-          font-weight: 600;
+          color: #94a3b8;
         }
 
-        @media (max-width: 968px) {
+        @media (max-width: 960px) {
           .footer-grid {
             grid-template-columns: 1fr 1fr;
           }
-          .footer-col-main {
-            grid-column: span 2;
-          }
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 640px) {
           .footer-grid {
             grid-template-columns: 1fr;
-          }
-          .footer-col-main {
-            grid-column: span 1;
-          }
-          .footer-bottom {
-            flex-direction: column;
-            align-items: flex-start;
           }
         }
       `}</style>

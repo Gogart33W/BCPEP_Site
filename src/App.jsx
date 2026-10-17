@@ -3,7 +3,7 @@ import Header from './components/Header';
 import Hero from './components/Hero';
 import ScheduleModule from './components/ScheduleModule';
 import SpecialtiesSection from './components/SpecialtiesSection';
-import AdmissionsCalculator from './components/AdmissionsCalculator';
+import AdmissionsSection from './components/AdmissionsSection';
 import TransparencyDocs from './components/TransparencyDocs';
 import AdministrationSection from './components/AdministrationSection';
 import NewsSection from './components/NewsSection';
@@ -13,34 +13,28 @@ import SearchModal from './components/SearchModal';
 import { INITIAL_SUBSTITUTIONS } from './data/collegeData';
 
 export default function App() {
-  // Тема оформлення (світла / темна)
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('bcpep_theme') || 'light';
   });
 
-  // Авторизований студент
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('bcpep_user');
     return saved ? JSON.parse(saved) : null;
   });
 
-  // Активна група для розкладу
   const [selectedGroup, setSelectedGroup] = useState(() => {
-    return currentUser?.group || 'PZ-41';
+    return currentUser?.group || 'P-422';
   });
 
-  // Заміни (з можливістю збереження нових з диспетчерської)
   const [substitutions, setSubstitutions] = useState(() => {
     const custom = localStorage.getItem('bcpep_custom_subs');
     return custom ? JSON.parse(custom) : INITIAL_SUBSTITUTIONS;
   });
 
-  // Стан модалок
   const [cabinetOpen, setCabinetOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
-  // Синхронізація теми з HTML атрибутом
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('bcpep_theme', theme);
@@ -78,6 +72,8 @@ export default function App() {
       specialties: 'specialties-block',
       transparency: 'transparency-block',
       admissions: 'admissions-block',
+      student: 'schedule-block',
+      news: 'news-block',
       administration: 'admin-block',
       history: 'admin-block',
       contacts: 'contacts-block'
@@ -94,7 +90,6 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      {/* Шапка порталу */}
       <Header 
         theme={theme}
         onToggleTheme={toggleTheme}
@@ -105,14 +100,15 @@ export default function App() {
         currentUser={currentUser}
       />
 
-      {/* Головний контент */}
       <main>
         <Hero 
           onNavigate={scrollToSection}
-          onOpenCabinet={() => setCabinetOpen(true)}
         />
 
-        {/* Кілер-фіча: Розклад та оперативні заміни */}
+        {/* Новини та події коледжу */}
+        <NewsSection />
+
+        {/* Розклад занять та заміни */}
         <ScheduleModule 
           substitutions={substitutions}
           onUpdateSubstitutions={handleUpdateSubstitutions}
@@ -124,22 +120,17 @@ export default function App() {
         <SpecialtiesSection onNavigate={scrollToSection} />
 
         {/* Вступнику */}
-        <AdmissionsCalculator />
+        <AdmissionsSection />
 
-        {/* Прозорість (Офіційні нормативні документи) */}
+        {/* Прозорість (Публічна інформація) */}
         <TransparencyDocs />
 
-        {/* Керівництво коледжу та циклові комісії */}
+        {/* Керівний склад */}
         <AdministrationSection />
-
-        {/* Новини та оголошення */}
-        <NewsSection />
       </main>
 
-      {/* Підвал сайту */}
       <Footer onNavigate={scrollToSection} />
 
-      {/* Модальні вікна */}
       <StudentCabinetModal 
         isOpen={cabinetOpen}
         onClose={() => setCabinetOpen(false)}

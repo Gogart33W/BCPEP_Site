@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Calendar, Clock, Video, AlertTriangle, RefreshCw, Upload, 
-  CheckCircle, FileText, Download, Share2, Sparkles, MapPin, User,
-  Bot, Check
+  Clock, Video, AlertTriangle, Upload, 
+  CheckCircle, Download, ExternalLink, MessageCircle
 } from 'lucide-react';
-import { GROUPS, BASE_SCHEDULE } from '../data/collegeData';
+import { 
+  GROUPS, 
+  BASE_SCHEDULE, 
+  BELL_SCHEDULE_WEEKDAY, 
+  BELL_SCHEDULE_SATURDAY,
+  COLLEGE_INFO,
+  CURRENT_NOTICE 
+} from '../data/collegeData';
 import { getMergedSchedule, getCurrentPairInfo, parseRawSubstitutions } from '../utils/scheduleParser';
 
 const DAYS = [
@@ -12,7 +18,8 @@ const DAYS = [
   { id: 2, name: 'Вівторок', short: 'Вт' },
   { id: 3, name: 'Середа', short: 'Ср' },
   { id: 4, name: 'Четвер', short: 'Чт' },
-  { id: 5, name: 'П’ятниця', short: 'Пт' }
+  { id: 5, name: 'П’ятниця', short: 'Пт' },
+  { id: 6, name: 'Субота', short: 'Сб' }
 ];
 
 export default function ScheduleModule({ 
@@ -24,13 +31,10 @@ export default function ScheduleModule({
   const [activeDay, setActiveDay] = useState(5);
   const [weekType, setWeekType] = useState('numerator');
   const [dispatcherOpen, setDispatcherOpen] = useState(false);
-  const [goshaOpen, setGoshaOpen] = useState(false);
-  const [goshaSyncing, setGoshaSyncing] = useState(false);
-  const [copiedTelegram, setCopiedTelegram] = useState(false);
   const [rawText, setRawText] = useState(
-`ПЗ-41 | 1 пара | Дипломне проектування -> Архітектура хмарних систем | Пелихівський Л.О. | ауд. 34
-ПЗ-41 | 4 пара | вікно -> Консультація до дипломного проєкту | Пелихівський Л.О. | Google Meet
-ПЗ-31 | 2 пара | Операційні системи -> Практикум з Linux | Пелихівський Л.О. | ауд. 34`
+`П-422 | 1 пара | Дипломне проєктування -> Хмарні технології та сервіси | Пелихівський Л.О. | ауд. 34
+П-422 | 4 пара | вікно -> Консультація до дипломного проєкту | Пелихівський Л.О. | ауд. 34
+П-323 | 2 пара | Операційні системи -> Практикум з Linux | Пелихівський Л.О. | ауд. 34`
   );
   const [successToast, setSuccessToast] = useState(null);
   const [currentPair, setCurrentPair] = useState(getCurrentPairInfo());
@@ -61,74 +65,65 @@ export default function ScheduleModule({
     }
   };
 
-  const getTomorrowDayId = () => {
-    const day = new Date().getDay();
-    if (day >= 5 || day === 0) return 1;
-    return day + 1;
-  };
-
-  const handleSelectTomorrow = () => {
-    const nextDay = getTomorrowDayId();
-    setActiveDay(nextDay);
-    setSuccessToast(`Перемкнуто на розклад на завтра (${DAYS.find(d => d.id === nextDay)?.name})`);
-    setTimeout(() => setSuccessToast(null), 3000);
-  };
-
-  const handleGoshaSync = () => {
-    setGoshaSyncing(true);
-    setTimeout(() => {
-      setGoshaSyncing(false);
-      setSuccessToast(`Гоша: заміни для ${selectedGroup} успішно синхронізовано з Telegram!`);
-      setTimeout(() => setSuccessToast(null), 4000);
-    }, 600);
-  };
-
-  const handleCopyTelegramSchedule = () => {
-    const dayName = DAYS.find(d => d.id === activeDay)?.name;
-    const lines = [
-      `📌 Розклад для ${selectedGroup} на ${dayName} (${weekType === 'numerator' ? 'чисельник' : 'знаменник'}):`
-    ];
-    currentSchedule.forEach(p => {
-      if (p.subject === '—') return;
-      if (p.isSubstituted) {
-        lines.push(`${p.pair} пара (${p.time}) ⚡ ЗАМІНА: ${p.subject.replace('⚡ ЗАМІНА: ', '')} | ${p.teacher} | ${p.room}`);
-      } else {
-        lines.push(`${p.pair} пара (${p.time}) • ${p.subject} | ${p.teacher} | ${p.room}`);
-      }
-    });
-    lines.push('\n🔗 Офіційний портал: bfcpep.org.ua (синхронізовано з ботом Гоша)');
-    
-    navigator.clipboard.writeText(lines.join('\n'));
-    setCopiedTelegram(true);
-    setTimeout(() => setCopiedTelegram(false), 2500);
+  const handleResetSubstitutions = () => {
+    localStorage.removeItem('bcpep_custom_subs');
+    window.location.reload();
   };
 
   return (
     <section className="schedule-section" id="schedule-block">
       <div className="container">
-        {/* Заголовок блоку */}
+        {/* Офіційне оголошення про формат навчання з bfcpep.org.ua */}
+        <div className="format-notice-card">
+          <div className="notice-badge">
+            <AlertTriangle size={16} />
+            <span>{CURRENT_NOTICE.title} ({CURRENT_NOTICE.dates})</span>
+          </div>
+          <div className="notice-grid">
+            <div className="notice-col">
+              <strong>🏫 Очне навчання:</strong>
+              <p>{CURRENT_NOTICE.offlineText}</p>
+            </div>
+            <div className="notice-col">
+              <strong>💻 Дистанційне навчання:</strong>
+              <p>{CURRENT_NOTICE.onlineText}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Заголовок блоку розкладу */}
         <div className="schedule-header">
           <div>
-            <div className="section-badge">
-              <Sparkles size={14} />
-              <span>Динамічний розклад нового покоління</span>
-            </div>
-            <h2 className="section-title">Розклад пар та оперативні заміни</h2>
+            <span className="section-badge">Навчальний процес</span>
+            <h2 className="section-title">Розклад занять та заміни</h2>
             <p className="section-subtitle">
-              Більше ніяких нечитабельних сканів документів. 
-              Система автоматично накладає заміни на розклад твоєї групи у реальному часі.
+              Оперативний розклад занять для академічних груп коледжу з урахуванням офіційних замін навчальної частини.
             </p>
           </div>
 
           <div className="schedule-header-actions">
-            <button 
-              className="btn btn-primary btn-sm gosha-toggle-btn"
-              onClick={() => setGoshaOpen(!goshaOpen)}
-              title="Інтеграція з ботом Гоша"
+            <a 
+              href={COLLEGE_INFO.schedulePdfUrl} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="btn btn-secondary btn-sm"
+              title="Відкрити офіційний розклад Google Drive"
             >
-              <Bot size={16} />
-              <span>{goshaOpen ? 'Сховати Гошу' : 'Гоша-синк (Telegram)'}</span>
-            </button>
+              <ExternalLink size={16} />
+              <span>Офіційний розклад (PDF)</span>
+            </a>
+
+            <a 
+              href={COLLEGE_INFO.substitutionsChatUrl} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="btn btn-secondary btn-sm"
+              title="Приєднатися до групи замін WhatsApp"
+            >
+              <MessageCircle size={16} />
+              <span>Група замін (WhatsApp)</span>
+            </a>
+
             <button 
               className="btn btn-secondary btn-sm"
               onClick={() => setDispatcherOpen(!dispatcherOpen)}
@@ -136,18 +131,18 @@ export default function ScheduleModule({
               <Upload size={16} />
               <span>{dispatcherOpen ? 'Сховати диспетчерську' : 'Диспетчерська (імпорт)'}</span>
             </button>
+
             <button 
               className="btn btn-secondary btn-sm"
               onClick={() => window.print()}
               title="Друк розкладу"
             >
               <Download size={16} />
-              <span>Експорт / Друк</span>
+              <span>Друк</span>
             </button>
           </div>
         </div>
 
-        {/* Спливаюче повідомлення */}
         {successToast && (
           <div className="toast-success">
             <CheckCircle size={18} />
@@ -155,7 +150,7 @@ export default function ScheduleModule({
           </div>
         )}
 
-        {/* Панель швидкого імпорту замін диспетчера */}
+        {/* Панель імпорту замін диспетчера */}
         {dispatcherOpen && (
           <div className="dispatcher-panel">
             <div className="dispatcher-header">
@@ -172,68 +167,19 @@ export default function ScheduleModule({
               rows={4}
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              placeholder="ПЗ-41 | 1 пара | Математика -> Веб-розробка | Пелихівський Л.О. | ауд. 34"
+              placeholder="П-422 | 1 пара | Математика -> Веб-розробка | Пелихівський Л.О. | ауд. 34"
             />
             <div className="dispatcher-footer">
               <span className="format-hint">Підтримує копіювання з Viber/Word або Google Таблиць</span>
               <button className="btn btn-primary btn-sm" onClick={handleApplySubstitutions}>
-                Застосувати зміни для сайту
+                Застосувати заміни
               </button>
             </div>
           </div>
         )}
 
-        {/* Панель бота Гоша */}
-        {goshaOpen && (
-          <div className="gosha-panel">
-            <div className="gosha-header">
-              <div className="gosha-title-wrap">
-                <div className="gosha-avatar">
-                  <Bot size={22} />
-                </div>
-                <div>
-                  <h4>Асистент розкладу «Гоша» • Live Telegram Sync</h4>
-                  <p>Автоматична перевірка замін для {selectedGroup} та швидкий експорт у бесіду групи</p>
-                </div>
-              </div>
-              <div className="gosha-status-badge">
-                <span className="pulse-dot"></span>
-                <span>Бот активний • База синхронізована</span>
-              </div>
-            </div>
-
-            <div className="gosha-actions-grid">
-              <button 
-                className="btn btn-secondary btn-sm"
-                onClick={handleSelectTomorrow}
-              >
-                <Calendar size={15} />
-                <span>Відкрити розклад на завтра</span>
-              </button>
-
-              <button 
-                className="btn btn-secondary btn-sm"
-                onClick={handleGoshaSync}
-                disabled={goshaSyncing}
-              >
-                <RefreshCw size={15} className={goshaSyncing ? 'spin-icon' : ''} />
-                <span>{goshaSyncing ? 'Оновлення...' : 'Синхронізувати заміни'}</span>
-              </button>
-
-              <button 
-                className="btn btn-primary btn-sm gosha-share-btn"
-                onClick={handleCopyTelegramSchedule}
-              >
-                {copiedTelegram ? <Check size={15} /> : <Share2 size={15} />}
-                <span>{copiedTelegram ? 'Скопійовано для чату!' : 'Скопіювати для Telegram-бесіди'}</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Панель фільтрів: Вибір групи та дня */}
+        {/* Контроли вибору групи та тижня */}
         <div className="schedule-controls">
-          {/* Вибір групи */}
           <div className="group-selector-box">
             <label className="control-label">Оберіть академічну групу:</label>
             <div className="group-pills">
@@ -249,7 +195,6 @@ export default function ScheduleModule({
             </div>
           </div>
 
-          {/* Вибір тижня (Чисельник/Знаменник) */}
           <div className="week-toggle-box">
             <label className="control-label">Тиждень:</label>
             <div className="segmented-control">
@@ -269,35 +214,24 @@ export default function ScheduleModule({
           </div>
         </div>
 
-        {/* Вкладки днів тижня з швидким переходом на завтра */}
-        <div className="day-tabs-wrapper">
-          <div className="day-tabs">
-            {DAYS.map(day => (
-              <button
-                key={day.id}
-                className={`day-tab ${activeDay === day.id ? 'active' : ''}`}
-                onClick={() => setActiveDay(day.id)}
-              >
-                <span className="day-title">{day.name}</span>
-                <span className="day-short">{day.short}</span>
-                {day.id === 5 && (
-                  <span className="sub-count-badge">2 заміни</span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <button 
-            className="btn btn-secondary btn-sm tomorrow-quick-btn"
-            onClick={handleSelectTomorrow}
-            title="Швидкий перехід на розклад наступного навчального дня"
-          >
-            <Clock size={14} />
-            <span>Пари на завтра</span>
-          </button>
+        {/* Вкладки днів тижня */}
+        <div className="day-tabs">
+          {DAYS.map(day => (
+            <button
+              key={day.id}
+              className={`day-tab ${activeDay === day.id ? 'active' : ''}`}
+              onClick={() => setActiveDay(day.id)}
+            >
+              <span className="day-title">{day.name}</span>
+              <span className="day-short">{day.short}</span>
+              {day.id === 5 && (
+                <span className="sub-count-badge">2 заміни</span>
+              )}
+            </button>
+          ))}
         </div>
 
-        {/* Статус-плашка поточної групи */}
+        {/* Статус поточної групи */}
         <div className="group-status-bar">
           <div className="status-group-info">
             <span className="current-group-tag">Група {selectedGroup}</span>
@@ -321,7 +255,7 @@ export default function ScheduleModule({
           </div>
         </div>
 
-        {/* Список пар розкладу */}
+        {/* Розклад пар */}
         <div className="pairs-grid">
           {currentSchedule.map(item => {
             const isCurrentPair = currentPair.status === 'in_progress' && currentPair.pair === item.pair && activeDay === 5;
@@ -363,16 +297,10 @@ export default function ScheduleModule({
                   {item.subject !== '—' && (
                     <div className="pair-meta">
                       {item.teacher && (
-                        <div className="meta-item">
-                          <User size={15} />
-                          <span>{item.teacher}</span>
-                        </div>
+                        <span className="meta-text">{item.teacher}</span>
                       )}
                       {item.room && (
-                        <div className="meta-item">
-                          <MapPin size={15} />
-                          <span>{item.room}</span>
-                        </div>
+                        <span className="meta-room">• {item.room}</span>
                       )}
                       {item.meetUrl && (
                         <a 
@@ -382,7 +310,7 @@ export default function ScheduleModule({
                           className="btn btn-primary btn-sm meet-btn"
                         >
                           <Video size={14} />
-                          <span>Google Meet (онлайн)</span>
+                          <span>Google Meet</span>
                         </a>
                       )}
                     </div>
@@ -393,20 +321,43 @@ export default function ScheduleModule({
           })}
         </div>
 
-        {/* Додаткова інформація під розкладом */}
-        <div className="schedule-footer-notes">
-          <div className="note-card">
-            <Clock size={18} className="note-icon" />
-            <div>
-              <strong>Розклад дзвінків</strong>
-              <p>1 пара: 08:30–09:50 | 2 пара: 10:05–11:25 | Велика перерва (обід 25 хв) | 3 пара: 11:50–13:10 | 4 пара: 13:25–14:45</p>
+        {/* Реальний розклад дзвінків (Пн–Пт та Субота) з bfcpep.org.ua */}
+        <div className="bell-schedules-grid">
+          <div className="bell-box">
+            <div className="bell-header">
+              <Clock size={18} />
+              <h4>Розклад дзвінків (Пн – Пт)</h4>
+              <span className="bell-tag">1 год 15 хв пара</span>
+            </div>
+            <div className="bell-list">
+              {BELL_SCHEDULE_WEEKDAY.map(b => (
+                <div key={b.pair} className="bell-item">
+                  <span className="bell-pair-num">{b.pair}</span>
+                  <div className="bell-details">
+                    <strong>{b.name}: {b.start} → {b.end}</strong>
+                    <span className="bell-break">Перерва: {b.breakAfter}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="note-card">
-            <FileText size={18} className="note-icon" />
-            <div>
-              <strong>Архів офіційних наказів диспетчерської</strong>
-              <p>Оригінальні паперові відомості та скани замін доступні в деканаті коледжу або за запитом у навчальну частину.</p>
+
+          <div className="bell-box">
+            <div className="bell-header">
+              <Clock size={18} />
+              <h4>Розклад дзвінків (Субота)</h4>
+              <span className="bell-tag">1 год пара</span>
+            </div>
+            <div className="bell-list">
+              {BELL_SCHEDULE_SATURDAY.map(b => (
+                <div key={b.pair} className="bell-item">
+                  <span className="bell-pair-num">{b.pair}</span>
+                  <div className="bell-details">
+                    <strong>{b.name}: {b.start} → {b.end}</strong>
+                    <span className="bell-break">Перерва: {b.breakAfter}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -414,55 +365,90 @@ export default function ScheduleModule({
 
       <style>{`
         .schedule-section {
-          padding: 4.5rem 0;
+          padding: 4rem 0;
           background: var(--bg-surface);
           border-bottom: 1px solid var(--border-color);
         }
 
-        .section-badge {
+        .format-notice-card {
+          background: rgba(234, 88, 12, 0.08);
+          border: 1px solid rgba(234, 88, 12, 0.3);
+          border-radius: var(--radius-lg);
+          padding: 1.25rem 1.5rem;
+          margin-bottom: 2.5rem;
+        }
+
+        .notice-badge {
           display: inline-flex;
           align-items: center;
-          gap: 0.4rem;
-          font-size: 0.8rem;
+          gap: 0.5rem;
           font-weight: 700;
-          color: var(--primary);
-          background: var(--primary-subtle);
-          padding: 0.3rem 0.75rem;
-          border-radius: var(--radius-full);
+          color: #ea580c;
+          font-size: 0.95rem;
           margin-bottom: 0.75rem;
         }
 
-        .section-title {
-          font-size: 2.25rem;
-          letter-spacing: -0.02em;
-          margin-bottom: 0.5rem;
+        .notice-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1.5rem;
         }
 
-        .section-subtitle {
+        .notice-col strong {
+          display: block;
+          font-size: 0.875rem;
+          margin-bottom: 0.25rem;
+          color: var(--text-main);
+        }
+
+        .notice-col p {
+          font-size: 0.85rem;
           color: var(--text-muted);
-          font-size: 1.05rem;
-          max-width: 700px;
-          line-height: 1.5;
+          line-height: 1.4;
         }
 
         .schedule-header {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          gap: 2rem;
+          gap: 1.5rem;
           flex-wrap: wrap;
-          margin-bottom: 2.5rem;
+          margin-bottom: 2rem;
+        }
+
+        .section-badge {
+          display: inline-block;
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--primary);
+          background: var(--primary-subtle);
+          padding: 0.3rem 0.75rem;
+          border-radius: var(--radius-full);
+          margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+          font-size: 2rem;
+          letter-spacing: -0.02em;
+          margin-bottom: 0.35rem;
+        }
+
+        .section-subtitle {
+          color: var(--text-muted);
+          font-size: 1rem;
+          max-width: 650px;
         }
 
         .schedule-header-actions {
           display: flex;
-          gap: 0.75rem;
+          gap: 0.6rem;
+          flex-wrap: wrap;
         }
 
         .toast-success {
           background: var(--accent-emerald-subtle);
           color: var(--accent-emerald);
-          padding: 0.85rem 1.25rem;
+          padding: 0.75rem 1.25rem;
           border-radius: var(--radius-md);
           display: flex;
           align-items: center;
@@ -472,7 +458,6 @@ export default function ScheduleModule({
           border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
-        /* Диспетчерська */
         .dispatcher-panel {
           background: var(--bg-muted);
           border: 1px dashed var(--border-subtle);
@@ -489,14 +474,12 @@ export default function ScheduleModule({
         }
 
         .dispatcher-header h4 {
-          font-size: 1.05rem;
-          color: var(--text-main);
+          font-size: 1rem;
         }
 
         .dispatcher-header p {
           font-size: 0.8rem;
           color: var(--text-muted);
-          margin-top: 0.2rem;
         }
 
         .dispatcher-textarea {
@@ -523,88 +506,6 @@ export default function ScheduleModule({
           color: var(--text-muted);
         }
 
-        /* Панель бота Гоша */
-        .gosha-panel {
-          background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(99, 102, 241, 0.04));
-          border: 1px solid rgba(37, 99, 235, 0.25);
-          border-radius: var(--radius-lg);
-          padding: 1.25rem 1.5rem;
-          margin-bottom: 2rem;
-        }
-
-        .gosha-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 1rem;
-          margin-bottom: 1rem;
-          flex-wrap: wrap;
-        }
-
-        .gosha-title-wrap {
-          display: flex;
-          align-items: center;
-          gap: 0.85rem;
-        }
-
-        .gosha-avatar {
-          width: 42px;
-          height: 42px;
-          border-radius: var(--radius-md);
-          background: var(--primary);
-          color: #fff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-          flex-shrink: 0;
-        }
-
-        .gosha-header h4 {
-          font-size: 1.05rem;
-          color: var(--text-main);
-          font-weight: 700;
-        }
-
-        .gosha-header p {
-          font-size: 0.825rem;
-          color: var(--text-muted);
-          margin-top: 0.15rem;
-        }
-
-        .gosha-status-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.45rem;
-          font-size: 0.775rem;
-          font-weight: 600;
-          color: var(--accent-emerald);
-          background: var(--accent-emerald-subtle);
-          padding: 0.3rem 0.75rem;
-          border-radius: var(--radius-full);
-          border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-
-        .gosha-actions-grid {
-          display: flex;
-          gap: 0.75rem;
-          flex-wrap: wrap;
-        }
-
-        .gosha-share-btn {
-          margin-left: auto;
-        }
-
-        .spin-icon {
-          animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        /* Контроли */
         .schedule-controls {
           display: flex;
           justify-content: space-between;
@@ -619,29 +520,28 @@ export default function ScheduleModule({
         }
 
         .control-label {
-          font-size: 0.825rem;
+          font-size: 0.8rem;
           font-weight: 700;
           color: var(--text-muted);
           text-transform: uppercase;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.4rem;
           display: block;
         }
 
         .group-pills {
           display: flex;
-          gap: 0.5rem;
+          gap: 0.4rem;
           flex-wrap: wrap;
         }
 
         .group-pill {
-          padding: 0.45rem 0.85rem;
-          font-size: 0.85rem;
+          padding: 0.4rem 0.75rem;
+          font-size: 0.825rem;
           font-weight: 700;
           border-radius: var(--radius-sm);
           background: var(--bg-surface);
           color: var(--text-main);
           border: 1px solid var(--border-color);
-          transition: all 0.15s ease;
         }
 
         .group-pill:hover {
@@ -659,16 +559,15 @@ export default function ScheduleModule({
           background: var(--bg-surface);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
-          padding: 0.25rem;
+          padding: 0.2rem;
         }
 
         .segment-btn {
-          padding: 0.35rem 0.85rem;
-          font-size: 0.825rem;
+          padding: 0.35rem 0.75rem;
+          font-size: 0.8rem;
           font-weight: 600;
           border-radius: var(--radius-sm);
           color: var(--text-muted);
-          transition: all 0.15s ease;
         }
 
         .segment-btn.active {
@@ -676,260 +575,257 @@ export default function ScheduleModule({
           color: var(--primary);
         }
 
-        /* Дні */
-        .day-tabs-wrapper {
-          display: flex;
-          align-items: stretch;
-          gap: 0.75rem;
-          margin-bottom: 1.5rem;
-          flex-wrap: wrap;
-        }
-
         .day-tabs {
           display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 0.75rem;
-          flex: 1;
-        }
-
-        .tomorrow-quick-btn {
-          white-space: nowrap;
-          padding: 0.75rem 1.25rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-weight: 600;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 0.6rem;
+          margin-bottom: 1.5rem;
         }
 
         .day-tab {
           background: var(--bg-surface);
           border: 1px solid var(--border-color);
-          padding: 0.85rem 1rem;
+          padding: 0.75rem 0.5rem;
           border-radius: var(--radius-md);
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.25rem;
-          transition: all 0.15s ease;
+          gap: 0.2rem;
           position: relative;
         }
 
         .day-tab:hover {
           border-color: var(--border-subtle);
-          background: var(--bg-muted);
         }
 
         .day-tab.active {
           border-color: var(--primary);
           background: var(--primary-subtle);
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+          color: var(--primary);
+          font-weight: 700;
         }
 
         .day-title {
-          font-weight: 700;
-          font-size: 0.95rem;
-          color: var(--text-main);
+          font-size: 0.875rem;
         }
-
         .day-short {
-          display: none;
-          font-weight: 700;
+          font-size: 0.75rem;
+          color: var(--text-muted);
+        }
+        .day-tab.active .day-short {
+          color: var(--primary);
         }
 
         .sub-count-badge {
-          font-size: 0.675rem;
-          font-weight: 800;
+          position: absolute;
+          top: -6px;
+          right: -6px;
           background: var(--accent-rose);
           color: #fff;
-          padding: 0.1rem 0.45rem;
+          font-size: 0.65rem;
+          padding: 0.15rem 0.4rem;
           border-radius: var(--radius-full);
-          margin-top: 0.25rem;
+          font-weight: 700;
         }
 
-        /* Статус-бар */
         .group-status-bar {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0.85rem 1.25rem;
-          background: var(--bg-muted);
+          padding: 0.75rem 1rem;
+          background: var(--bg-surface-elevated);
+          border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
           margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+          gap: 0.75rem;
         }
 
         .current-group-tag {
-          font-family: var(--font-heading);
-          font-weight: 800;
-          font-size: 1.15rem;
+          font-weight: 700;
+          font-size: 1rem;
           margin-right: 0.75rem;
-          color: var(--text-main);
         }
 
         .status-day-text {
-          font-size: 0.875rem;
+          font-size: 0.85rem;
           color: var(--text-muted);
         }
 
-        /* Список пар */
         .pairs-grid {
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 0.75rem;
           margin-bottom: 2.5rem;
         }
 
         .pair-card {
           background: var(--bg-surface);
           border: 1px solid var(--border-color);
-          border-radius: var(--radius-lg);
-          padding: 1.25rem 1.5rem;
+          border-radius: var(--radius-md);
+          padding: 1rem 1.25rem;
           display: grid;
           grid-template-columns: 180px 1fr;
           gap: 1.5rem;
           align-items: center;
-          transition: all 0.2s ease;
-        }
-
-        .pair-card:hover {
-          border-color: var(--border-subtle);
-          box-shadow: var(--shadow-md);
         }
 
         .pair-card.is-substituted {
-          border-left: 5px solid var(--accent-rose);
-          background: linear-gradient(90deg, var(--accent-rose-subtle) 0%, var(--bg-surface) 35%);
+          border-left: 4px solid var(--accent-rose);
+          background: rgba(244, 63, 94, 0.03);
         }
 
         .pair-card.is-current {
-          border: 2px solid var(--primary);
-          box-shadow: 0 0 16px rgba(37, 99, 235, 0.2);
+          border-color: var(--primary);
+          box-shadow: 0 0 0 2px var(--primary-subtle);
         }
 
         .pair-time-col {
+          border-right: 1px solid var(--border-color);
+          padding-right: 1.25rem;
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
-          border-right: 1px solid var(--border-color);
-          padding-right: 1.5rem;
         }
 
         .pair-index {
-          font-family: var(--font-heading);
-          font-size: 1.125rem;
-          font-weight: 800;
-          color: var(--text-main);
+          font-weight: 700;
+          font-size: 1rem;
         }
 
         .pair-time {
-          font-size: 0.85rem;
+          font-size: 0.8rem;
           color: var(--text-muted);
-          font-weight: 600;
+          font-family: monospace;
         }
 
         .current-badge {
-          margin-top: 0.35rem;
+          font-size: 0.7rem;
+          margin-top: 0.25rem;
           align-self: flex-start;
-        }
-
-        .pair-content-col {
-          display: flex;
-          flex-direction: column;
-          gap: 0.4rem;
         }
 
         .substitution-header {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.6rem;
+          margin-bottom: 0.35rem;
         }
 
         .sub-reason {
           font-size: 0.75rem;
-          color: var(--text-muted);
+          color: var(--accent-rose);
+          font-weight: 600;
         }
 
         .old-subject-line {
-          font-size: 0.825rem;
+          display: block;
+          font-size: 0.8rem;
           color: var(--text-muted);
           text-decoration: line-through;
-          display: block;
+          margin-bottom: 0.2rem;
         }
 
         .pair-subject {
-          font-size: 1.2rem;
+          font-size: 1.15rem;
           font-weight: 700;
-          color: var(--text-main);
-          letter-spacing: -0.01em;
         }
 
         .pair-meta {
           display: flex;
           align-items: center;
-          gap: 1.25rem;
-          flex-wrap: wrap;
-          margin-top: 0.35rem;
-        }
-
-        .meta-item {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
+          gap: 0.75rem;
+          margin-top: 0.3rem;
           font-size: 0.85rem;
           color: var(--text-muted);
-          font-weight: 500;
         }
 
         .meet-btn {
+          margin-left: auto;
           background: #107c41;
           border: none;
-          padding: 0.35rem 0.8rem;
-          font-size: 0.8rem;
-        }
-        .meet-btn:hover {
-          background: #0b5e31;
+          padding: 0.3rem 0.65rem;
+          font-size: 0.75rem;
         }
 
-        /* Примітки під розкладом */
-        .schedule-footer-notes {
+        /* Розклад дзвінків */
+        .bell-schedules-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1.25rem;
+          gap: 1.5rem;
         }
 
-        .note-card {
+        .bell-box {
           background: var(--bg-muted);
           border: 1px solid var(--border-color);
-          border-radius: var(--radius-md);
-          padding: 1rem 1.25rem;
-          display: flex;
-          gap: 0.75rem;
-          align-items: flex-start;
+          border-radius: var(--radius-lg);
+          padding: 1.25rem;
         }
 
-        .note-icon {
+        .bell-header {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          margin-bottom: 1rem;
+        }
+
+        .bell-header h4 {
+          font-size: 1rem;
+          flex: 1;
+        }
+
+        .bell-tag {
+          font-size: 0.725rem;
+          font-weight: 700;
           color: var(--primary);
-          margin-top: 0.15rem;
+          background: var(--primary-subtle);
+          padding: 0.2rem 0.5rem;
+          border-radius: var(--radius-full);
+        }
+
+        .bell-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .bell-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-sm);
+          padding: 0.5rem 0.75rem;
+        }
+
+        .bell-pair-num {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: var(--primary);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          font-weight: 700;
           flex-shrink: 0;
         }
 
-        .note-card strong {
-          font-size: 0.875rem;
+        .bell-details strong {
           display: block;
-          margin-bottom: 0.2rem;
+          font-size: 0.825rem;
         }
 
-        .note-card p {
-          font-size: 0.775rem;
+        .bell-break {
+          font-size: 0.725rem;
           color: var(--text-muted);
-          line-height: 1.4;
         }
 
         @media (max-width: 768px) {
-          .day-title {
-            display: none;
-          }
-          .day-short {
-            display: inline;
+          .notice-grid, .bell-schedules-grid {
+            grid-template-columns: 1fr;
           }
           .pair-card {
             grid-template-columns: 1fr;
@@ -942,10 +838,12 @@ export default function ScheduleModule({
             padding-bottom: 0.5rem;
             flex-direction: row;
             justify-content: space-between;
-            align-items: center;
           }
-          .schedule-footer-notes {
-            grid-template-columns: 1fr;
+          .day-title {
+            display: none;
+          }
+          .day-short {
+            display: inline;
           }
         }
       `}</style>

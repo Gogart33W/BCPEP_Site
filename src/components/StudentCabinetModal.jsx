@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   X, User, Calendar, Check, Copy, 
   ExternalLink, LogOut, Shield, Laptop, BookOpen, AlertCircle,
-  Bot, Video
+  Video
 } from 'lucide-react';
 import { COLLEGE_INFO, BASE_SCHEDULE, INITIAL_SUBSTITUTIONS } from '../data/collegeData';
 import { getMergedSchedule } from '../utils/scheduleParser';
@@ -85,7 +85,6 @@ export default function StudentCabinetModal({
 
         <div className="modal-body">
           {currentUser ? (
-            /* Якщо студент авторизований */
             <div className="cabinet-content">
               {/* Профіль студента */}
               <div className="profile-banner">
@@ -105,7 +104,7 @@ export default function StudentCabinetModal({
               {/* Академічні куратори */}
               <div className="info-grid">
                 <div className="info-card">
-                  <span className="info-label">Керівник циклової комісії / дипломного:</span>
+                  <span className="info-label">Керівник дипломного проєкту:</span>
                   <strong className="info-val">{currentUser.supervisor}</strong>
                 </div>
                 <div className="info-card">
@@ -115,7 +114,7 @@ export default function StudentCabinetModal({
               </div>
 
               {/* Швидкі сервіси */}
-              <h5 className="sub-heading">Корпоративні інструменти Google Workspace</h5>
+              <h5 className="sub-heading">Корпоративні інструменти</h5>
               <div className="services-grid">
                 <a 
                   href="https://classroom.google.com" 
@@ -137,26 +136,23 @@ export default function StudentCabinetModal({
                 >
                   <Calendar size={18} />
                   <div>
-                    <strong>Мій розклад із замінами</strong>
-                    <span>Пари на сьогодні/завтра</span>
+                    <strong>Розклад занять</strong>
+                    <span>Пари та поточні заміни</span>
                   </div>
                 </button>
               </div>
 
-              {/* Розклад на завтра від Гоші */}
+              {/* Розклад на завтра для групи */}
               <div className="cabinet-tomorrow-box">
                 <div className="cabinet-tomorrow-header">
-                  <div className="title-with-bot">
-                    <Bot size={18} className="bot-inline-icon" />
-                    <strong>Пари на {tomorrowDayName} ({currentUser.group})</strong>
-                  </div>
+                  <strong>Пари на {tomorrowDayName} ({currentUser.group})</strong>
                   <button 
                     className="btn btn-ghost btn-xs copy-schedule-btn"
                     onClick={handleCopyTomorrowSchedule}
-                    title="Скопіювати розклад на завтра для бесіди"
+                    title="Скопіювати розклад для бесіди"
                   >
                     {copiedSchedule ? <Check size={13} color="#059669" /> : <Copy size={13} />}
-                    <span>{copiedSchedule ? 'Скопійовано' : 'В чат'}</span>
+                    <span>{copiedSchedule ? 'Скопійовано' : 'В буфер'}</span>
                   </button>
                 </div>
 
@@ -208,7 +204,6 @@ export default function StudentCabinetModal({
               </button>
             </div>
           ) : (
-            /* Якщо ще не увійшов */
             <div className="login-prompt">
               <div className="login-hero-icon">
                 <Shield size={36} />
@@ -216,37 +211,36 @@ export default function StudentCabinetModal({
               <h4>Авторизація через корпоративний акаунт</h4>
               <p>Вхід для студентів коледжу з доменом <code>@bfcpep.org.ua</code></p>
 
-              {/* Кнопка 1-клік входу */}
               <button 
                 className="btn btn-primary btn-block quick-auth-btn"
-                onClick={() => handleQuickLogin('gogart@bfcpep.org.ua', 'Микола (ПЗ-41)', 'PZ-41')}
+                onClick={() => handleQuickLogin('gogart@bfcpep.org.ua', 'Микола (П-422)', 'P-422')}
               >
                 <Laptop size={18} />
-                <span>Швидкий вхід: Микола (ПЗ-41)</span>
+                <span>Швидкий вхід: Микола (П-422)</span>
               </button>
 
               <div className="divider-line">
-                <span>або тестовий вхід для молодших курсів</span>
+                <span>або тестовий вхід для інших груп</span>
               </div>
 
               <div className="quick-test-buttons">
                 <button 
                   className="btn btn-secondary btn-sm"
-                  onClick={() => handleQuickLogin('student.pz31@bfcpep.org.ua', 'Студент ІПЗ (ПЗ-31)', 'PZ-31')}
+                  onClick={() => handleQuickLogin('student.p323@bfcpep.org.ua', 'Студент ІПЗ (П-323)', 'P-323')}
                 >
-                  Увійти як ПЗ-31
+                  Увійти як П-323
                 </button>
                 <button 
                   className="btn btn-secondary btn-sm"
-                  onClick={() => handleQuickLogin('student.m31@bfcpep.org.ua', 'Студент Економіст (М-31)', 'M-31')}
+                  onClick={() => handleQuickLogin('student.a330@bfcpep.org.ua', 'Студент Машинобудування (А-330)', 'A-330')}
                 >
-                  Увійти як М-31
+                  Увійти як А-330
                 </button>
               </div>
 
               <div className="auth-note">
                 <AlertCircle size={15} />
-                <span>Якщо у вас виникли труднощі з корпоративною поштою, зверніться до системного адміністратора у лаб. 34.</span>
+                <span>Якщо у вас виникли труднощі з корпоративною поштою, зверніться до навчальної частини коледжу.</span>
               </div>
             </div>
           )}
@@ -322,7 +316,6 @@ export default function StudentCabinetModal({
           padding: 1.5rem;
         }
 
-        /* Авторизований профіль */
         .profile-banner {
           display: flex;
           align-items: center;
@@ -338,16 +331,15 @@ export default function StudentCabinetModal({
           border-radius: 50%;
           background: var(--primary);
           color: #fff;
-          font-family: var(--font-heading);
-          font-weight: 800;
-          font-size: 1.35rem;
           display: flex;
           align-items: center;
           justify-content: center;
+          font-size: 1.35rem;
+          font-weight: 700;
         }
 
         .profile-details h4 {
-          font-size: 1.125rem;
+          font-size: 1.1rem;
           margin-bottom: 0.15rem;
         }
 
@@ -367,7 +359,7 @@ export default function StudentCabinetModal({
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 0.75rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
         }
 
         .info-card {
@@ -390,7 +382,7 @@ export default function StudentCabinetModal({
         }
 
         .sub-heading {
-          font-size: 0.875rem;
+          font-size: 0.825rem;
           color: var(--text-muted);
           text-transform: uppercase;
           letter-spacing: 0.04em;
@@ -401,7 +393,7 @@ export default function StudentCabinetModal({
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 0.75rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 1.25rem;
         }
 
         .service-btn {
@@ -413,7 +405,6 @@ export default function StudentCabinetModal({
           align-items: center;
           gap: 0.6rem;
           text-align: left;
-          transition: all 0.15s ease;
           position: relative;
         }
 
@@ -439,7 +430,6 @@ export default function StudentCabinetModal({
           color: var(--text-muted);
         }
 
-        /* Віджет розкладу на завтра */
         .cabinet-tomorrow-box {
           background: var(--bg-muted);
           border: 1px solid var(--border-color);
@@ -453,17 +443,7 @@ export default function StudentCabinetModal({
           justify-content: space-between;
           align-items: center;
           margin-bottom: 0.75rem;
-        }
-
-        .title-with-bot {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
           font-size: 0.875rem;
-        }
-
-        .bot-inline-icon {
-          color: var(--primary);
         }
 
         .copy-schedule-btn {
@@ -523,11 +503,6 @@ export default function StudentCabinetModal({
           color: #107c41;
           padding: 0.35rem;
           border-radius: var(--radius-sm);
-          display: flex;
-          align-items: center;
-        }
-        .meet-mini-btn:hover {
-          background: rgba(16, 124, 65, 0.1);
         }
 
         .no-pairs-text {
@@ -609,21 +584,24 @@ export default function StudentCabinetModal({
         }
 
         .login-prompt p {
-          font-size: 0.85rem;
           color: var(--text-muted);
+          font-size: 0.875rem;
           margin-bottom: 1.5rem;
         }
 
         .quick-auth-btn {
           padding: 0.85rem;
           font-size: 0.95rem;
-          margin-bottom: 1.25rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.6rem;
         }
 
         .divider-line {
           position: relative;
           text-align: center;
-          margin: 1.25rem 0;
+          margin: 1.5rem 0;
         }
 
         .divider-line::before {
@@ -646,21 +624,25 @@ export default function StudentCabinetModal({
 
         .quick-test-buttons {
           display: flex;
-          justify-content: center;
           gap: 0.75rem;
           margin-bottom: 1.5rem;
+        }
+
+        .quick-test-buttons button {
+          flex: 1;
         }
 
         .auth-note {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: var(--bg-muted);
-          padding: 0.75rem;
-          border-radius: var(--radius-sm);
-          font-size: 0.75rem;
-          color: var(--text-muted);
           text-align: left;
+          background: var(--bg-muted);
+          padding: 0.75rem 1rem;
+          border-radius: var(--radius-md);
+          font-size: 0.775rem;
+          color: var(--text-muted);
+          line-height: 1.4;
         }
       `}</style>
     </div>

@@ -1,14 +1,15 @@
 import React from 'react';
-import { Calendar, ArrowRight, ShieldCheck, GraduationCap, Laptop, Sparkles } from 'lucide-react';
+import { Calendar, ExternalLink, GraduationCap, FileText, ArrowRight, Building } from 'lucide-react';
+import { COLLEGE_INFO, CURRENT_NOTICE } from '../data/collegeData';
 
-export default function Hero({ onNavigate, onOpenCabinet }) {
+export default function Hero({ onNavigate }) {
   return (
     <section className="hero-section">
       <div className="container hero-container">
         <div className="hero-content">
           <div className="hero-badge">
-            <Sparkles size={14} className="sparkle-icon" />
-            <span>Офіційний веб-портал нового покоління</span>
+            <Building size={14} />
+            <span>Державний заклад фахової передвищої освіти • Засновано в 1903 році</span>
           </div>
 
           <h1 className="hero-title">
@@ -16,120 +17,110 @@ export default function Hero({ onNavigate, onOpenCabinet }) {
           </h1>
 
           <p className="hero-description">
-            Сучасна інженерна, ІТ та економічна освіта. Практичні лабораторії, 
-            автоматизований розклад із миттєвими замінами та персональний кабінет студента.
+            Провідний заклад фахової передвищої освіти Житомирщини. Підготовка фахівців за 8 ліцензованими спеціальностями: інженерія ПЗ, машинобудування, менеджмент, металургія, облік, фінанси, спорт та офісна справа.
           </p>
 
-          <div className="hero-buttons">
+          <div className="hero-actions">
             <button 
-              className="btn btn-primary hero-btn-main"
+              className="btn btn-primary hero-btn"
               onClick={() => onNavigate('schedule')}
             >
               <Calendar size={18} />
-              <span>Переглянути розклад і заміни</span>
+              <span>Розклад занять та заміни</span>
               <ArrowRight size={16} />
             </button>
 
+            <a 
+              href={COLLEGE_INFO.schedulePdfUrl} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="btn btn-secondary hero-btn"
+            >
+              <ExternalLink size={16} />
+              <span>Офіційний розклад (PDF)</span>
+            </a>
+
             <button 
-              className="btn btn-secondary"
+              className="btn btn-secondary hero-btn"
               onClick={() => onNavigate('admissions')}
             >
               <GraduationCap size={18} />
               <span>Вступнику 2026</span>
             </button>
+
+            <button 
+              className="btn btn-ghost hero-btn"
+              onClick={() => onNavigate('transparency')}
+            >
+              <FileText size={16} />
+              <span>Прозорість (Статут)</span>
+            </button>
           </div>
 
-          {/* Швидкі показники коледжу */}
-          <div className="hero-stats">
-            <div className="stat-item">
-              <span className="stat-number">8</span>
-              <span className="stat-label">Спеціальностей</span>
+          {/* Показники коледжу */}
+          <div className="hero-stats-grid">
+            <div className="stat-card">
+              <span className="stat-num">8</span>
+              <span className="stat-desc">Спеціальностей</span>
             </div>
-            <div className="stat-separator"></div>
-            <div className="stat-item">
-              <span className="stat-number">121</span>
-              <span className="stat-label">ІПЗ / IT-напрям</span>
+            <div className="stat-card">
+              <span className="stat-num">120+</span>
+              <span className="stat-desc">Років історії</span>
             </div>
-            <div className="stat-separator"></div>
-            <div className="stat-item">
-              <span className="stat-number">85+</span>
-              <span className="stat-label">Років традицій</span>
+            <div className="stat-card">
+              <span className="stat-num">100%</span>
+              <span className="stat-desc">Акредитовані ОПП</span>
             </div>
-            <div className="stat-separator"></div>
-            <div className="stat-item">
-              <span className="stat-number">Live</span>
-              <span className="stat-label">Автозаміни пар</span>
+            <div className="stat-card">
+              <span className="stat-num">Live</span>
+              <span className="stat-desc">Заміни занять</span>
             </div>
           </div>
         </div>
 
-        {/* Швидка картка кабінету або розкладу */}
-        <div className="hero-card-wrapper">
-          <div className="hero-preview-card">
-            <div className="preview-header">
-              <div className="preview-status">
-                <span className="pulse-dot"></span>
-                <span>Сьогодні • П’ятниця (Чисельник)</span>
-              </div>
-              <span className="badge badge-rose">⚡ 2 активні заміни</span>
+        {/* Швидка картка офіційного оголошення коледжу */}
+        <div className="hero-announcement-card">
+          <div className="announcement-header">
+            <span className="pulse-dot"></span>
+            <strong>{CURRENT_NOTICE.title}</strong>
+          </div>
+          <div className="announcement-date">
+            <span>{CURRENT_NOTICE.dates}</span>
+          </div>
+          <div className="announcement-body">
+            <div className="announcement-row">
+              <span className="announcement-label">🏫 Очне навчання:</span>
+              <p>{CURRENT_NOTICE.offlineText}</p>
             </div>
-
-            <div className="preview-body">
-              <div className="preview-group-badge">
-                <Laptop size={15} />
-                <span>Група ПЗ-41 (Інженерія ПЗ)</span>
-              </div>
-
-              <div className="preview-schedule-list">
-                <div className="preview-item substituted">
-                  <span className="preview-pair">1 пара • 08:30</span>
-                  <div className="preview-sub-info">
-                    <span className="old-line">Дипломне проектування (ауд. 34)</span>
-                    <strong className="new-line">⚡ ЗАМІНА: Хмарні обчислення (Пелихівський Л.О.)</strong>
-                  </div>
-                </div>
-
-                <div className="preview-item">
-                  <span className="preview-pair">2 пара • 10:05</span>
-                  <div className="preview-sub-info">
-                    <strong>Розробка ПЗ: Тестування (Куроп С.І.)</strong>
-                    <span className="room-text">ауд. 28 (комп. клас)</span>
-                  </div>
-                </div>
-
-                <div className="preview-item">
-                  <span className="preview-pair">3 пара • 11:50</span>
-                  <div className="preview-sub-info">
-                    <strong>Кураторська година (Гіневська І.В.)</strong>
-                    <span className="room-text">ауд. 31</span>
-                  </div>
-                </div>
-              </div>
-
-              <button 
-                className="btn btn-secondary btn-block preview-action-btn"
-                onClick={() => onNavigate('schedule')}
-              >
-                <span>Відкрити повний розклад своєї групи</span>
-                <ArrowRight size={15} />
-              </button>
+            <div className="announcement-row">
+              <span className="announcement-label">💻 Дистанційно:</span>
+              <p>{CURRENT_NOTICE.onlineText}</p>
+            </div>
+            <div className="announcement-row bell-row">
+              <span className="announcement-label">🔔 Розклад дзвінків:</span>
+              <p className="bell-summary-text">{CURRENT_NOTICE.bellSummary}</p>
             </div>
           </div>
+          <button 
+            className="btn btn-primary btn-block btn-sm"
+            onClick={() => onNavigate('schedule')}
+          >
+            Відкрити розклад пар
+          </button>
         </div>
       </div>
 
       <style>{`
         .hero-section {
-          padding: 4.5rem 0 3.5rem;
-          background: radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 40%),
-                      radial-gradient(circle at 90% 80%, rgba(217, 119, 6, 0.05) 0%, transparent 40%);
+          padding: 3.5rem 0 3rem;
+          background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-muted) 100%);
           border-bottom: 1px solid var(--border-color);
         }
 
         .hero-container {
           display: grid;
-          grid-template-columns: 1.2fr 0.8fr;
-          gap: 3.5rem;
+          grid-template-columns: 1.3fr 1fr;
+          gap: 2.5rem;
           align-items: center;
         }
 
@@ -139,201 +130,140 @@ export default function Hero({ onNavigate, onOpenCabinet }) {
           gap: 0.5rem;
           background: var(--primary-subtle);
           color: var(--primary);
-          font-size: 0.825rem;
-          font-weight: 700;
           padding: 0.35rem 0.85rem;
           border-radius: var(--radius-full);
+          font-size: 0.8rem;
+          font-weight: 700;
           margin-bottom: 1.25rem;
-        }
-
-        .sparkle-icon {
-          color: var(--accent-amber);
         }
 
         .hero-title {
-          font-size: 2.85rem;
-          letter-spacing: -0.03em;
-          margin-bottom: 1.25rem;
+          font-size: 2.35rem;
           line-height: 1.15;
+          letter-spacing: -0.02em;
+          margin-bottom: 1rem;
         }
 
         .highlight-text {
-          background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: var(--primary);
+          display: block;
         }
 
         .hero-description {
-          font-size: 1.125rem;
+          font-size: 1.05rem;
           color: var(--text-muted);
-          margin-bottom: 2rem;
           line-height: 1.6;
-          max-width: 600px;
+          margin-bottom: 1.75rem;
+          max-width: 620px;
         }
 
-        .hero-buttons {
+        .hero-actions {
           display: flex;
-          gap: 1rem;
+          gap: 0.75rem;
           flex-wrap: wrap;
-          margin-bottom: 2.5rem;
+          margin-bottom: 2rem;
         }
 
-        .hero-btn-main {
-          padding: 0.85rem 1.75rem;
-          font-size: 1rem;
-        }
-
-        .hero-stats {
-          display: flex;
+        .hero-btn {
+          display: inline-flex;
           align-items: center;
-          gap: 1.5rem;
+          gap: 0.5rem;
+        }
+
+        .hero-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
           padding-top: 1.5rem;
           border-top: 1px solid var(--border-color);
         }
 
-        .stat-item {
+        .stat-card {
           display: flex;
           flex-direction: column;
         }
 
-        .stat-number {
-          font-family: var(--font-heading);
+        .stat-num {
           font-size: 1.5rem;
           font-weight: 800;
-          color: var(--text-main);
+          color: var(--primary);
           line-height: 1;
+          margin-bottom: 0.25rem;
         }
 
-        .stat-label {
+        .stat-desc {
           font-size: 0.775rem;
           color: var(--text-muted);
-          font-weight: 500;
-          margin-top: 0.25rem;
+          font-weight: 600;
         }
 
-        .stat-separator {
-          width: 1px;
-          height: 32px;
-          background: var(--border-color);
-        }
-
-        /* Прев'ю-картка розкладу */
-        .hero-preview-card {
-          background: var(--bg-surface);
+        /* Картка оголошення */
+        .hero-announcement-card {
+          background: var(--bg-surface-elevated);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-lg);
           padding: 1.5rem;
-          box-shadow: var(--shadow-xl);
-          transition: transform 0.2s ease;
-          position: relative;
+          box-shadow: var(--shadow-lg);
+          border-top: 4px solid #ea580c;
         }
 
-        .hero-preview-card:hover {
-          transform: translateY(-2px);
-        }
-
-        .preview-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 1.25rem;
-          padding-bottom: 0.75rem;
-          border-bottom: 1px solid var(--border-color);
-        }
-
-        .preview-status {
+        .announcement-header {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          font-size: 0.825rem;
-          font-weight: 600;
-          color: var(--text-muted);
+          font-size: 1.05rem;
+          color: var(--text-main);
+          margin-bottom: 0.25rem;
         }
 
-        .pulse-dot {
-          width: 8px;
-          height: 8px;
-          background: var(--accent-emerald);
-          border-radius: 50%;
-          display: inline-block;
-          box-shadow: 0 0 8px var(--accent-emerald);
-        }
-
-        .preview-group-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          font-size: 0.85rem;
+        .announcement-date {
+          font-size: 0.8rem;
+          color: #ea580c;
           font-weight: 700;
-          color: var(--primary);
-          background: var(--primary-subtle);
-          padding: 0.35rem 0.75rem;
-          border-radius: var(--radius-sm);
           margin-bottom: 1rem;
         }
 
-        .preview-schedule-list {
+        .announcement-body {
           display: flex;
           flex-direction: column;
           gap: 0.75rem;
           margin-bottom: 1.25rem;
         }
 
-        .preview-item {
-          padding: 0.75rem;
-          background: var(--bg-muted);
-          border-radius: var(--radius-md);
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-          border-left: 3px solid var(--primary);
+        .announcement-row {
+          font-size: 0.85rem;
         }
 
-        .preview-item.substituted {
-          border-left-color: var(--accent-rose);
-          background: var(--accent-rose-subtle);
-        }
-
-        .preview-pair {
-          font-size: 0.725rem;
+        .announcement-label {
           font-weight: 700;
+          display: block;
+          margin-bottom: 0.15rem;
+          color: var(--text-main);
+        }
+
+        .announcement-row p {
           color: var(--text-muted);
-          text-transform: uppercase;
+          line-height: 1.4;
         }
 
-        .preview-sub-info {
-          display: flex;
-          flex-direction: column;
+        .bell-row {
+          background: var(--bg-muted);
+          padding: 0.5rem 0.75rem;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--border-color);
         }
 
-        .old-line {
+        .bell-summary-text {
+          font-family: monospace;
           font-size: 0.775rem;
-          text-decoration: line-through;
-          color: var(--text-muted);
         }
 
-        .new-line {
-          font-size: 0.875rem;
-          color: var(--accent-rose);
-        }
-
-        .room-text {
-          font-size: 0.775rem;
-          color: var(--text-muted);
-        }
-
-        .preview-action-btn {
-          width: 100%;
-          justify-content: space-between;
-        }
-
-        @media (max-width: 968px) {
+        @media (max-width: 960px) {
           .hero-container {
             grid-template-columns: 1fr;
-            gap: 2.5rem;
           }
           .hero-title {
-            font-size: 2.25rem;
+            font-size: 1.85rem;
           }
         }
       `}</style>
