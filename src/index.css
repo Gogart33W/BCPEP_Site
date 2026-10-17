@@ -310,3 +310,57 @@ input, select, textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* ==========================================================================
+   Плавні анімації інтерфейсу та мікро-взаємодії
+   ========================================================================== */
+
+@keyframes pageFadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.site-main {
+  animation: pageFadeSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Плавні ховери карток та елементів */
+.news-card, .promo-tile, .stat-card, .dept-card, .dept-full-card, .format-box {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.18s ease;
+}
+
+.news-card:hover, .dept-full-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Мікро-анімація кнопок при натисканні */
+.btn:active, .header-search-pill:active, .theme-toggle-btn:active {
+  transform: scale(0.97) !important;
+}
+
+/* Плавне затухання модальних вікон та штор */
+@keyframes modalBackdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalContentPop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+

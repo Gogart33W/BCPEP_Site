@@ -27,24 +27,53 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
     setActiveDropdown(null);
   }, [location.pathname]);
 
+  const openTimerRef = React.useRef(null);
   const closeTimerRef = React.useRef(null);
 
   const handleMouseEnter = (idx) => {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    setActiveDropdown(idx);
+    if (activeDropdown !== null) {
+      setActiveDropdown(idx);
+    } else {
+      openTimerRef.current = setTimeout(() => {
+        setActiveDropdown(idx);
+      }, 100);
+    }
   };
 
   const handleMouseLeave = () => {
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
     closeTimerRef.current = setTimeout(() => {
       setActiveDropdown(null);
-    }, 180);
+    }, 320);
   };
 
   const handleToggleDropdown = (idx, e) => {
     e.preventDefault();
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     setActiveDropdown(prev => (prev === idx ? null : idx));
   };
+
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      if (!e.target.closest('.desktop-nav')) {
+        setActiveDropdown(null);
+      }
+    };
+    const handleGlobalKey = (e) => {
+      if (e.key === 'Escape') {
+        setActiveDropdown(null);
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener('click', handleGlobalClick);
+    document.addEventListener('keydown', handleGlobalKey);
+    return () => {
+      document.removeEventListener('click', handleGlobalClick);
+      document.removeEventListener('keydown', handleGlobalKey);
+    };
+  }, []);
 
   return (
     <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
@@ -117,10 +146,14 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
                 );
               }
 
+              const subGroups = item.children.filter(c => c.children && c.children.length > 0);
+              const singleItems = item.children.filter(c => !c.children || c.children.length === 0);
+              const isMega = subGroups.length > 0;
+
               return (
                 <div 
                   key={idx}
-                  className="nav-dropdown-wrapper"
+                  className={`nav-dropdown-wrapper ${isMega ? 'has-mega' : ''}`}
                   onMouseEnter={() => handleMouseEnter(idx)}
                   onMouseLeave={handleMouseLeave}
                 >
@@ -136,16 +169,62 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
                   {activeDropdown === idx && (
                     <div 
-                      className="dropdown-menu-box" 
+                      className={`dropdown-menu-box ${isMega ? 'dropdown-mega-box' : ''}`}
                       role="menu"
                       onMouseEnter={() => handleMouseEnter(idx)}
                       onMouseLeave={handleMouseLeave}
                     >
-                      {item.children.map((sub, sIdx) => {
-                        const hasSubKids = sub.children && sub.children.length > 0;
+                      {isMega ? (
+                        <div className="mega-menu-grid">
+                          {/* Ліва колонка: Основні розділи */}
+                          <div className="mega-col mega-col-main">
+                            <span className="mega-section-label">Розділи</span>
+                            <div className="mega-links-list">
+                              {singleItems.map((sub, sIdx) => (
+                                <Link 
+                                  key={sIdx}
+                                  to={sub.path} 
+                                  className="dropdown-link"
+                                  onClick={() => setActiveDropdown(null)}
+                                >
+                                  <span>{sub.title}</span>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
 
-                        if (!hasSubKids) {
-                          return (
+                          {/* Права колонка: Підрозділи або спеціальності */}
+                          <div className="mega-col mega-col-sub">
+                            {subGroups.map((group, gIdx) => (
+                              <div key={gIdx} className="mega-subgroup">
+                                <Link 
+                                  to={group.path} 
+                                  className="mega-group-header"
+                                  onClick={() => setActiveDropdown(null)}
+                                >
+                                  <span>{group.title}</span>
+                                  <ChevronRight size={13} />
+                                </Link>
+
+                                <div className="mega-sub-grid">
+                                  {group.children.map((child, cIdx) => (
+                                    <Link 
+                                      key={cIdx}
+                                      to={child.path} 
+                                      className="dropdown-link sub-child-link"
+                                      onClick={() => setActiveDropdown(null)}
+                                    >
+                                      <span>{child.title}</span>
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="dropdown-single-list">
+                          {item.children.map((sub, sIdx) => (
                             <Link 
                               key={sIdx}
                               to={sub.path} 
@@ -154,35 +233,9 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
                             >
                               <span>{sub.title}</span>
                             </Link>
-                          );
-                        }
-
-                        return (
-                          <div key={sIdx} className="sub-dropdown-wrapper">
-                            <Link 
-                              to={sub.path} 
-                              className="dropdown-link has-sub"
-                              onClick={() => setActiveDropdown(null)}
-                            >
-                              <span>{sub.title}</span>
-                              <ChevronRight size={13} className="sub-caret" />
-                            </Link>
-
-                            <div className="sub-dropdown-menu">
-                              {sub.children.map((third, tIdx) => (
-                                <Link 
-                                  key={tIdx}
-                                  to={third.path} 
-                                  className="dropdown-link"
-                                  onClick={() => setActiveDropdown(null)}
-                                >
-                                  <span>{third.title}</span>
-                                </Link>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -195,12 +248,11 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
             <button 
               className="header-search-pill" 
               onClick={onOpenSearch} 
-              title="Швидкий пошук по коледжу (Ctrl + K / ⌘K)"
+              title="Швидкий пошук по коледжу"
               aria-label="Пошук"
             >
               <Search size={15} className="search-icon" />
               <span className="search-text">Пошук...</span>
-              <kbd className="search-kbd">⌘K</kbd>
             </button>
 
             <button 
@@ -491,10 +543,10 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           flex-direction: column;
           gap: 0.2rem;
           z-index: 1100;
-          animation: dropIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: dropIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        /* Невидимий міст, що не дає курсору втратити фокус */
+        /* Невидимий міст, що не дає курсору втратити фокус при русі вниз */
         .dropdown-menu-box::before {
           content: '';
           position: absolute;
@@ -507,12 +559,18 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
         @keyframes dropIn {
           from {
             opacity: 0;
-            transform: translateY(-4px);
+            transform: translateY(-6px);
           }
           to {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+
+        .dropdown-single-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.2rem;
         }
 
         .dropdown-link {
@@ -534,48 +592,86 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           padding-left: 1.05rem;
         }
 
-        .sub-dropdown-wrapper {
-          position: relative;
+        /* Мега-меню для багаторівневих списків (без розривів та вильотів) */
+        .dropdown-mega-box {
+          min-width: 620px;
+          padding: 0.85rem;
         }
 
-        .sub-caret {
+        .mega-menu-grid {
+          display: grid;
+          grid-template-columns: 210px 1fr;
+          gap: 1rem;
+        }
+
+        .mega-col-main {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+          border-right: 1px solid var(--border-color);
+          padding-right: 0.85rem;
+        }
+
+        .mega-section-label {
+          font-size: 0.725rem;
+          font-weight: 700;
+          text-transform: uppercase;
           color: var(--text-muted);
-          transition: transform var(--transition-fast);
+          letter-spacing: 0.04em;
+          padding: 0.25rem 0.5rem;
         }
 
-        .sub-dropdown-wrapper:hover .sub-caret {
-          transform: translateX(2px);
-          color: var(--primary);
-        }
-
-        .sub-dropdown-menu {
-          display: none;
-          position: absolute;
-          top: -4px;
-          left: 100%;
-          min-width: 290px;
-          background: var(--bg-surface);
-          border: 1px solid var(--border-color);
-          border-radius: var(--radius-md);
-          box-shadow: var(--shadow-xl);
-          padding: 0.5rem;
+        .mega-links-list {
+          display: flex;
           flex-direction: column;
           gap: 0.2rem;
-          z-index: 1200;
         }
 
-        .sub-dropdown-menu::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          left: -14px;
-          width: 14px;
-        }
-
-        .sub-dropdown-wrapper:hover .sub-dropdown-menu {
+        .mega-col-sub {
           display: flex;
-          animation: dropIn 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .mega-subgroup {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .mega-group-header {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          font-size: 0.825rem;
+          font-weight: 700;
+          color: var(--primary);
+          padding: 0.25rem 0.5rem;
+          border-radius: var(--radius-xs);
+          text-decoration: none;
+        }
+
+        .mega-group-header:hover {
+          background: var(--primary-subtle);
+        }
+
+        .mega-sub-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.35rem;
+        }
+
+        .sub-child-link {
+          padding: 0.45rem 0.65rem;
+          font-size: 0.8rem;
+          background: var(--bg-muted);
+          border-radius: var(--radius-xs);
+          line-height: 1.35;
+        }
+
+        .sub-child-link:hover {
+          background: var(--primary-subtle);
+          padding-left: 0.85rem;
         }
 
         /* Кнопки дій: пошук та перемикач теми */
@@ -589,7 +685,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           display: inline-flex;
           align-items: center;
           gap: 0.55rem;
-          padding: 0.42rem 0.85rem;
+          padding: 0.45rem 1rem;
           border-radius: var(--radius-full);
           border: 1px solid var(--border-color);
           background: var(--bg-surface);
@@ -611,17 +707,6 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
         .search-icon {
           color: var(--primary);
-        }
-
-        .search-kbd {
-          font-family: inherit;
-          font-size: 0.685rem;
-          font-weight: 700;
-          color: var(--text-muted);
-          background: var(--bg-muted);
-          padding: 0.12rem 0.4rem;
-          border-radius: var(--radius-xs);
-          border: 1px solid var(--border-color);
         }
 
         .theme-toggle-btn {

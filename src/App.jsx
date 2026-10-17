@@ -7,6 +7,7 @@ import SchedulePage from './pages/SchedulePage';
 import NewsArchivePage from './pages/NewsArchivePage';
 import AdmissionsHubPage from './pages/AdmissionsHubPage';
 import TuitionPage from './pages/TuitionPage';
+import StructurePage from './pages/StructurePage';
 import GenericPage from './pages/GenericPage';
 import AdminPage from './pages/AdminPage';
 import ApiDocsPage from './pages/ApiDocsPage';
@@ -76,6 +77,9 @@ export default function App() {
             <Route path="/abituriyentu/vstup" element={<AdmissionsHubPage />} />
             <Route path="/abituriyentu" element={<AdmissionsHubPage />} />
             <Route path="/abituriyentu/vartist-navchannya" element={<TuitionPage />} />
+            <Route path="/struktura-ta-organy-upravlinnya" element={<StructurePage />} />
+            <Route path="/pro-koledzh/struktura-upravlinnya" element={<StructurePage />} />
+            <Route path="/pro-koledzh/struktura" element={<StructurePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/api-docs" element={<ApiDocsPage />} />
             <Route path="/*" element={<GenericPage />} />
