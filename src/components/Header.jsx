@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Sun, Moon, Calendar, Search, User, Menu, X, 
-  ChevronDown, Bell, Shield, GraduationCap, Building2, PhoneCall 
+  ChevronDown 
 } from 'lucide-react';
 import { getCurrentPairInfo } from '../utils/scheduleParser';
 

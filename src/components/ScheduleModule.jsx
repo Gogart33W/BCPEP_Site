@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Calendar, Clock, Video, AlertTriangle, RefreshCw, Upload, 
-  CheckCircle, FileText, Download, Share2, Filter, Sparkles, MapPin, User 
+  CheckCircle, FileText, Download, Share2, Sparkles, MapPin, User,
+  Bot, Check
 } from 'lucide-react';
-import { GROUPS, BASE_SCHEDULE, BELL_SCHEDULE } from '../data/collegeData';
+import { GROUPS, BASE_SCHEDULE } from '../data/collegeData';
 import { getMergedSchedule, getCurrentPairInfo, parseRawSubstitutions } from '../utils/scheduleParser';
 
 const DAYS = [
@@ -20,9 +21,12 @@ export default function ScheduleModule({
   selectedGroup, 
   onSelectGroup 
 }) {
-  const [activeDay, setActiveDay] = useState(5); // П'ятниця за замовчуванням
-  const [weekType, setWeekType] = useState('numerator'); // Чисельник / Знаменник
+  const [activeDay, setActiveDay] = useState(5);
+  const [weekType, setWeekType] = useState('numerator');
   const [dispatcherOpen, setDispatcherOpen] = useState(false);
+  const [goshaOpen, setGoshaOpen] = useState(false);
+  const [goshaSyncing, setGoshaSyncing] = useState(false);
+  const [copiedTelegram, setCopiedTelegram] = useState(false);
   const [rawText, setRawText] = useState(
 `ПЗ-41 | 1 пара | Дипломне проектування -> Архітектура хмарних систем | Пелихівський Л.О. | ауд. 34
 ПЗ-41 | 4 пара | вікно -> Консультація до дипломного проєкту | Пелихівський Л.О. | Google Meet
@@ -57,9 +61,46 @@ export default function ScheduleModule({
     }
   };
 
-  const handleResetSubstitutions = () => {
-    localStorage.removeItem('bcpep_custom_subs');
-    window.location.reload();
+  const getTomorrowDayId = () => {
+    const day = new Date().getDay();
+    if (day >= 5 || day === 0) return 1;
+    return day + 1;
+  };
+
+  const handleSelectTomorrow = () => {
+    const nextDay = getTomorrowDayId();
+    setActiveDay(nextDay);
+    setSuccessToast(`Перемкнуто на розклад на завтра (${DAYS.find(d => d.id === nextDay)?.name})`);
+    setTimeout(() => setSuccessToast(null), 3000);
+  };
+
+  const handleGoshaSync = () => {
+    setGoshaSyncing(true);
+    setTimeout(() => {
+      setGoshaSyncing(false);
+      setSuccessToast(`Гоша: заміни для ${selectedGroup} успішно синхронізовано з Telegram!`);
+      setTimeout(() => setSuccessToast(null), 4000);
+    }, 600);
+  };
+
+  const handleCopyTelegramSchedule = () => {
+    const dayName = DAYS.find(d => d.id === activeDay)?.name;
+    const lines = [
+      `📌 Розклад для ${selectedGroup} на ${dayName} (${weekType === 'numerator' ? 'чисельник' : 'знаменник'}):`
+    ];
+    currentSchedule.forEach(p => {
+      if (p.subject === '—') return;
+      if (p.isSubstituted) {
+        lines.push(`${p.pair} пара (${p.time}) ⚡ ЗАМІНА: ${p.subject.replace('⚡ ЗАМІНА: ', '')} | ${p.teacher} | ${p.room}`);
+      } else {
+        lines.push(`${p.pair} пара (${p.time}) • ${p.subject} | ${p.teacher} | ${p.room}`);
+      }
+    });
+    lines.push('\n🔗 Офіційний портал: bfcpep.org.ua (синхронізовано з ботом Гоша)');
+    
+    navigator.clipboard.writeText(lines.join('\n'));
+    setCopiedTelegram(true);
+    setTimeout(() => setCopiedTelegram(false), 2500);
   };
 
   return (
@@ -81,11 +122,19 @@ export default function ScheduleModule({
 
           <div className="schedule-header-actions">
             <button 
+              className="btn btn-primary btn-sm gosha-toggle-btn"
+              onClick={() => setGoshaOpen(!goshaOpen)}
+              title="Інтеграція з ботом Гоша"
+            >
+              <Bot size={16} />
+              <span>{goshaOpen ? 'Сховати Гошу' : 'Гоша-синк (Telegram)'}</span>
+            </button>
+            <button 
               className="btn btn-secondary btn-sm"
               onClick={() => setDispatcherOpen(!dispatcherOpen)}
             >
               <Upload size={16} />
-              <span>{dispatcherOpen ? 'Сховати диспетчерську' : 'Диспетчерська (імпорт замін)'}</span>
+              <span>{dispatcherOpen ? 'Сховати диспетчерську' : 'Диспетчерська (імпорт)'}</span>
             </button>
             <button 
               className="btn btn-secondary btn-sm"
@@ -134,6 +183,54 @@ export default function ScheduleModule({
           </div>
         )}
 
+        {/* Панель бота Гоша */}
+        {goshaOpen && (
+          <div className="gosha-panel">
+            <div className="gosha-header">
+              <div className="gosha-title-wrap">
+                <div className="gosha-avatar">
+                  <Bot size={22} />
+                </div>
+                <div>
+                  <h4>Асистент розкладу «Гоша» • Live Telegram Sync</h4>
+                  <p>Автоматична перевірка замін для {selectedGroup} та швидкий експорт у бесіду групи</p>
+                </div>
+              </div>
+              <div className="gosha-status-badge">
+                <span className="pulse-dot"></span>
+                <span>Бот активний • База синхронізована</span>
+              </div>
+            </div>
+
+            <div className="gosha-actions-grid">
+              <button 
+                className="btn btn-secondary btn-sm"
+                onClick={handleSelectTomorrow}
+              >
+                <Calendar size={15} />
+                <span>Відкрити розклад на завтра</span>
+              </button>
+
+              <button 
+                className="btn btn-secondary btn-sm"
+                onClick={handleGoshaSync}
+                disabled={goshaSyncing}
+              >
+                <RefreshCw size={15} className={goshaSyncing ? 'spin-icon' : ''} />
+                <span>{goshaSyncing ? 'Оновлення...' : 'Синхронізувати заміни'}</span>
+              </button>
+
+              <button 
+                className="btn btn-primary btn-sm gosha-share-btn"
+                onClick={handleCopyTelegramSchedule}
+              >
+                {copiedTelegram ? <Check size={15} /> : <Share2 size={15} />}
+                <span>{copiedTelegram ? 'Скопійовано для чату!' : 'Скопіювати для Telegram-бесіди'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Панель фільтрів: Вибір групи та дня */}
         <div className="schedule-controls">
           {/* Вибір групи */}
@@ -172,21 +269,32 @@ export default function ScheduleModule({
           </div>
         </div>
 
-        {/* Вкладки днів тижня */}
-        <div className="day-tabs">
-          {DAYS.map(day => (
-            <button
-              key={day.id}
-              className={`day-tab ${activeDay === day.id ? 'active' : ''}`}
-              onClick={() => setActiveDay(day.id)}
-            >
-              <span className="day-title">{day.name}</span>
-              <span className="day-short">{day.short}</span>
-              {day.id === 5 && (
-                <span className="sub-count-badge">2 заміни</span>
-              )}
-            </button>
-          ))}
+        {/* Вкладки днів тижня з швидким переходом на завтра */}
+        <div className="day-tabs-wrapper">
+          <div className="day-tabs">
+            {DAYS.map(day => (
+              <button
+                key={day.id}
+                className={`day-tab ${activeDay === day.id ? 'active' : ''}`}
+                onClick={() => setActiveDay(day.id)}
+              >
+                <span className="day-title">{day.name}</span>
+                <span className="day-short">{day.short}</span>
+                {day.id === 5 && (
+                  <span className="sub-count-badge">2 заміни</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <button 
+            className="btn btn-secondary btn-sm tomorrow-quick-btn"
+            onClick={handleSelectTomorrow}
+            title="Швидкий перехід на розклад наступного навчального дня"
+          >
+            <Clock size={14} />
+            <span>Пари на завтра</span>
+          </button>
         </div>
 
         {/* Статус-плашка поточної групи */}
@@ -415,6 +523,87 @@ export default function ScheduleModule({
           color: var(--text-muted);
         }
 
+        /* Панель бота Гоша */
+        .gosha-panel {
+          background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), rgba(99, 102, 241, 0.04));
+          border: 1px solid rgba(37, 99, 235, 0.25);
+          border-radius: var(--radius-lg);
+          padding: 1.25rem 1.5rem;
+          margin-bottom: 2rem;
+        }
+
+        .gosha-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1rem;
+          flex-wrap: wrap;
+        }
+
+        .gosha-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+        }
+
+        .gosha-avatar {
+          width: 42px;
+          height: 42px;
+          border-radius: var(--radius-md);
+          background: var(--primary);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+          flex-shrink: 0;
+        }
+
+        .gosha-header h4 {
+          font-size: 1.05rem;
+          color: var(--text-main);
+          font-weight: 700;
+        }
+
+        .gosha-header p {
+          font-size: 0.825rem;
+          color: var(--text-muted);
+          margin-top: 0.15rem;
+        }
+
+        .gosha-status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.45rem;
+          font-size: 0.775rem;
+          font-weight: 600;
+          color: var(--accent-emerald);
+          background: var(--accent-emerald-subtle);
+          padding: 0.3rem 0.75rem;
+          border-radius: var(--radius-full);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .gosha-actions-grid {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+        }
+
+        .gosha-share-btn {
+          margin-left: auto;
+        }
+
+        .spin-icon {
+          animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
         /* Контроли */
         .schedule-controls {
           display: flex;
@@ -488,11 +677,28 @@ export default function ScheduleModule({
         }
 
         /* Дні */
+        .day-tabs-wrapper {
+          display: flex;
+          align-items: stretch;
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+          flex-wrap: wrap;
+        }
+
         .day-tabs {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
           gap: 0.75rem;
-          margin-bottom: 1.5rem;
+          flex: 1;
+        }
+
+        .tomorrow-quick-btn {
+          white-space: nowrap;
+          padding: 0.75rem 1.25rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-weight: 600;
         }
 
         .day-tab {

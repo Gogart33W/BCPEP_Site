@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { 
-  X, User, Mail, GraduationCap, Calendar, Check, Copy, 
-  ExternalLink, LogOut, Shield, Laptop, BookOpen, AlertCircle 
+  X, User, Calendar, Check, Copy, 
+  ExternalLink, LogOut, Shield, Laptop, BookOpen, AlertCircle,
+  Bot, Video
 } from 'lucide-react';
-import { COLLEGE_INFO } from '../data/collegeData';
+import { COLLEGE_INFO, BASE_SCHEDULE, INITIAL_SUBSTITUTIONS } from '../data/collegeData';
+import { getMergedSchedule } from '../utils/scheduleParser';
 
 export default function StudentCabinetModal({ 
   isOpen, 
@@ -13,10 +15,42 @@ export default function StudentCabinetModal({
   onLogout,
   onNavigate 
 }) {
-  const [emailInput, setEmailInput] = useState('');
   const [copied, setCopied] = useState(false);
+  const [copiedSchedule, setCopiedSchedule] = useState(false);
 
   if (!isOpen) return null;
+
+  const tomorrowDayId = (() => {
+    const day = new Date().getDay();
+    if (day >= 5 || day === 0) return 1;
+    return day + 1;
+  })();
+
+  const dayNames = ['Неділя', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота'];
+  const tomorrowDayName = dayNames[tomorrowDayId];
+
+  const tomorrowSchedule = currentUser ? getMergedSchedule(
+    BASE_SCHEDULE,
+    INITIAL_SUBSTITUTIONS,
+    currentUser.group,
+    tomorrowDayId
+  ).filter(p => p.subject !== '—') : [];
+
+  const handleCopyTomorrowSchedule = () => {
+    const lines = [
+      `📌 Розклад для ${currentUser.group} на ${tomorrowDayName}:`
+    ];
+    tomorrowSchedule.forEach(p => {
+      if (p.isSubstituted) {
+        lines.push(`${p.pair} пара (${p.time}) ⚡ ЗАМІНА: ${p.subject.replace('⚡ ЗАМІНА: ', '')} | ${p.teacher} | ${p.room}`);
+      } else {
+        lines.push(`${p.pair} пара (${p.time}) • ${p.subject} | ${p.teacher} | ${p.room}`);
+      }
+    });
+    navigator.clipboard.writeText(lines.join('\n'));
+    setCopiedSchedule(true);
+    setTimeout(() => setCopiedSchedule(false), 2000);
+  };
 
   const handleCopyIban = () => {
     navigator.clipboard.writeText(COLLEGE_INFO.iban);
@@ -107,6 +141,48 @@ export default function StudentCabinetModal({
                     <span>Пари на сьогодні/завтра</span>
                   </div>
                 </button>
+              </div>
+
+              {/* Розклад на завтра від Гоші */}
+              <div className="cabinet-tomorrow-box">
+                <div className="cabinet-tomorrow-header">
+                  <div className="title-with-bot">
+                    <Bot size={18} className="bot-inline-icon" />
+                    <strong>Пари на {tomorrowDayName} ({currentUser.group})</strong>
+                  </div>
+                  <button 
+                    className="btn btn-ghost btn-xs copy-schedule-btn"
+                    onClick={handleCopyTomorrowSchedule}
+                    title="Скопіювати розклад на завтра для бесіди"
+                  >
+                    {copiedSchedule ? <Check size={13} color="#059669" /> : <Copy size={13} />}
+                    <span>{copiedSchedule ? 'Скопійовано' : 'В чат'}</span>
+                  </button>
+                </div>
+
+                <div className="cabinet-pairs-list">
+                  {tomorrowSchedule.length > 0 ? (
+                    tomorrowSchedule.map(p => (
+                      <div key={p.pair} className={`cabinet-pair-item ${p.isSubstituted ? 'is-substituted' : ''}`}>
+                        <span className="cabinet-pair-num">{p.pair} пара ({p.time.split('–')[0].trim()})</span>
+                        <div className="cabinet-pair-details">
+                          <strong className="cabinet-pair-title">{p.subject}</strong>
+                          <div className="cabinet-pair-meta">
+                            <span>{p.teacher}</span>
+                            {p.room && <span>• {p.room}</span>}
+                          </div>
+                        </div>
+                        {p.meetUrl && (
+                          <a href={p.meetUrl} target="_blank" rel="noreferrer" className="meet-mini-btn" title="Приєднатися до Google Meet">
+                            <Video size={13} />
+                          </a>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="no-pairs-text">На цей день пар немає або вихідний</p>
+                  )}
+                </div>
               </div>
 
               {/* Оплата навчання / гуртожитку */}
@@ -361,6 +437,104 @@ export default function StudentCabinetModal({
           top: 0.6rem;
           right: 0.6rem;
           color: var(--text-muted);
+        }
+
+        /* Віджет розкладу на завтра */
+        .cabinet-tomorrow-box {
+          background: var(--bg-muted);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-md);
+          padding: 1rem;
+          margin-bottom: 1.25rem;
+        }
+
+        .cabinet-tomorrow-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 0.75rem;
+        }
+
+        .title-with-bot {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.875rem;
+        }
+
+        .bot-inline-icon {
+          color: var(--primary);
+        }
+
+        .copy-schedule-btn {
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+        }
+
+        .cabinet-pairs-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .cabinet-pair-item {
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-sm);
+          padding: 0.6rem 0.75rem;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          font-size: 0.825rem;
+        }
+
+        .cabinet-pair-item.is-substituted {
+          border-left: 3px solid var(--accent-rose);
+          background: rgba(244, 63, 94, 0.04);
+        }
+
+        .cabinet-pair-num {
+          font-weight: 700;
+          color: var(--primary);
+          white-space: nowrap;
+          font-size: 0.775rem;
+        }
+
+        .cabinet-pair-details {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .cabinet-pair-title {
+          display: block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-size: 0.85rem;
+        }
+
+        .cabinet-pair-meta {
+          font-size: 0.725rem;
+          color: var(--text-muted);
+          margin-top: 0.1rem;
+        }
+
+        .meet-mini-btn {
+          color: #107c41;
+          padding: 0.35rem;
+          border-radius: var(--radius-sm);
+          display: flex;
+          align-items: center;
+        }
+        .meet-mini-btn:hover {
+          background: rgba(16, 124, 65, 0.1);
+        }
+
+        .no-pairs-text {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          text-align: center;
+          padding: 0.5rem 0;
         }
 
         .payment-box {
