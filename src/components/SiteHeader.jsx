@@ -14,6 +14,9 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
   const location = useLocation();
 
   const timerRef = React.useRef(null);
+  const headerRef = React.useRef(null);
+  const drawerRef = React.useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(54);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -21,6 +24,13 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
       timerRef.current = null;
     }
   };
+
+  // Відстеження висоти шапки
+  useEffect(() => {
+    if (headerRef.current) {
+      setHeaderHeight(headerRef.current.offsetHeight || 54);
+    }
+  }, [scrolled, mobileOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,24 +40,63 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Закриття меню при зміні маршруту
+  // Закриття меню при зміні маршруту + повернення на початок нової сторінки
   useEffect(() => {
     clearTimer();
     setMobileOpen(false);
     setOpenIdx(null);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [location.pathname]);
 
-  // Блокування скролу фонової сторінки при відкритому мобільному меню
+  // Плавне повернення на початок сторінки при відкритті мобільного меню
   useEffect(() => {
     if (mobileOpen) {
-      document.body.style.overflow = 'hidden';
+      // Плавно скролимо вікно на початок незалежно від глибини скролу
+      try {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'smooth'
+        });
+      } catch (e) {
+        window.scrollTo(0, 0);
+      }
+
+      // Скидаємо скрол самого контейнера висувки на початок
+      if (drawerRef.current) {
+        drawerRef.current.scrollTop = 0;
+      }
+
+      // Затримка блокування скролу, щоб плавна анімація прокрутки сторінки встигла виконатися
+      const lockTimer = setTimeout(() => {
+        document.body.style.overflow = 'hidden';
+      }, 450);
+
+      return () => {
+        clearTimeout(lockTimer);
+        document.body.style.overflow = '';
+      };
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [mobileOpen]);
+
+  const handleToggleMobile = () => {
+    const next = !mobileOpen;
+    if (next) {
+      // Плавний скрол безпосередньо за подією кліку для максимальної чутливості
+      try {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'smooth'
+        });
+      } catch (e) {
+        window.scrollTo(0, 0);
+      }
+    }
+    setMobileOpen(next);
+  };
 
   const handleMouseEnter = (idx) => {
     clearTimer();
@@ -106,7 +155,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
   }, []);
 
   return (
-    <header className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
+    <header ref={headerRef} className={`site-header ${scrolled ? 'is-scrolled' : ''}`}>
       {/* Верхня інформаційна панель контактів (без соцмереж) */}
       <div className="top-bar">
         <div className="container top-bar-container">
@@ -298,7 +347,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
             <button 
               className="burger-toggle" 
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={handleToggleMobile}
               aria-label={mobileOpen ? 'Закрити меню' : 'Відкрити меню'}
               aria-expanded={mobileOpen}
             >
@@ -310,7 +359,14 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
       {/* Мобільне меню-висувка з акордеонами та гарантованим кліком */}
       {mobileOpen && (
-        <div className="mobile-drawer">
+        <div 
+          className="mobile-drawer"
+          ref={drawerRef}
+          style={{
+            top: `${headerHeight}px`,
+            height: `calc(100dvh - ${headerHeight}px)`
+          }}
+        >
           <div className="container mobile-drawer-inner">
             <div className="mobile-quick-actions">
               <Link 
@@ -832,12 +888,25 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           border-radius: var(--radius-sm);
         }
 
+        @keyframes mobileDrawerEnter {
+          from {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         /* Мобільне меню-висувка */
         .mobile-drawer {
           background: var(--bg-surface);
           border-top: 1px solid var(--border-color);
           padding: 1.25rem 0 3rem;
           box-shadow: var(--shadow-xl);
+          animation: mobileDrawerEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          overscroll-behavior: contain;
         }
 
         .mobile-quick-actions {
@@ -1068,6 +1137,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
             padding: 1rem 1rem 4rem;
             background: var(--bg-surface);
             overflow-y: auto;
+            overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
           }
         }
