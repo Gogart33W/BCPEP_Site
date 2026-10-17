@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Bcpep_site
+Original_site/
+original_site/
+[Oo]rigin[a-z_]*
+storage/uploads/
+storage/*.db*

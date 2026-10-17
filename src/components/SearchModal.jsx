@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Calendar, BookOpen, FileText, User, ArrowRight } from 'lucide-react';
-import { SPECIALTIES, GROUPS, OFFICIAL_DOCUMENTS, ADMINISTRATION } from '../data/collegeData';
+import { useNavigate } from 'react-router-dom';
+import { Search, X, FileText, Newspaper, ArrowRight, Clock } from 'lucide-react';
+import pagesData from '../../content/pages.json';
+import newsData from '../../content/news.json';
 
-export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate }) {
+export default function SearchModal({ isOpen, onClose }) {
   const [query, setQuery] = useState('');
   const inputRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -18,19 +21,20 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
 
   const q = query.trim().toLowerCase();
 
-  // Фільтрація результатів
-  const groupResults = q ? GROUPS.filter(g => g.name.toLowerCase().includes(q) || g.department.toLowerCase().includes(q)) : [];
-  const specResults = q ? SPECIALTIES.filter(s => s.code.includes(q) || s.name.toLowerCase().includes(q)) : [];
-  const docResults = q ? OFFICIAL_DOCUMENTS.filter(d => d.title.toLowerCase().includes(q) || d.category.toLowerCase().includes(q)) : [];
-  const teacherResults = q ? [
-    ...ADMINISTRATION.filter(a => a.name.toLowerCase().includes(q)),
-    { name: 'Пелихівський Л.О.', role: 'Викладач комп’ютерних дисциплін', qualification: 'Спеціаліст вищої категорії' },
-    { name: 'Куроп С.І.', role: 'Викладач спецдисциплін ІПЗ', qualification: 'Методист' },
-    { name: 'Гіневська І.В.', role: 'Викладач баз даних та ІТ', qualification: 'Спеціаліст вищої категорії' },
-    { name: 'Сидорко В.П.', role: 'Викладач фізичного виховання', qualification: 'Старший викладач' }
-  ].filter(t => t.name.toLowerCase().includes(q)) : [];
+  const pageResults = q ? pagesData.filter(p => 
+    p.title.toLowerCase().includes(q) || (p.content && p.content.toLowerCase().includes(q))
+  ).slice(0, 8) : [];
 
-  const totalResults = groupResults.length + specResults.length + docResults.length + teacherResults.length;
+  const newsResults = q ? newsData.filter(n => 
+    n.title.toLowerCase().includes(q) || (n.content && n.content.toLowerCase().includes(q))
+  ).slice(0, 8) : [];
+
+  const totalResults = pageResults.length + newsResults.length;
+
+  const handleSelect = (path) => {
+    navigate(path);
+    onClose();
+  };
 
   return (
     <div className="search-overlay" onClick={onClose}>
@@ -40,7 +44,7 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
           <input
             ref={inputRef}
             type="text"
-            placeholder="Введіть групу (П-422), викладача, спеціальність чи документ..."
+            placeholder="Введіть запит (розклад, реквізити, статут, гуртожиток, спеціальність)..."
             value={query}
             onChange={e => setQuery(e.target.value)}
             className="search-modal-input"
@@ -51,98 +55,60 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
         <div className="search-results-area">
           {q === '' ? (
             <div className="search-hints">
-              <span className="hint-title">Популярні пошукові запити:</span>
+              <span className="hint-title">Популярні розділи коледжу:</span>
               <div className="hint-tags">
-                <button className="hint-tag" onClick={() => setQuery('П-422')}>Група П-422</button>
-                <button className="hint-tag" onClick={() => setQuery('Пелихівський')}>Пелихівський</button>
-                <button className="hint-tag" onClick={() => setQuery('121')}>121 Інженерія ПЗ</button>
-                <button className="hint-tag" onClick={() => setQuery('Статут')}>Статут коледжу</button>
-                <button className="hint-tag" onClick={() => setQuery('Заміни')}>Заміни</button>
+                <button className="hint-tag" onClick={() => handleSelect('/rozklad-zanyat/rozklad-zanyat')}>Розклад занять</button>
+                <button className="hint-tag" onClick={() => handleSelect('/studentu/rekvizyty-dlya-oplaty')}>Реквізити для оплати</button>
+                <button className="hint-tag" onClick={() => handleSelect('/ustanovchi-dokumenty')}>Статут та ліцензії</button>
+                <button className="hint-tag" onClick={() => handleSelect('/abituriyentu/speczialnosti')}>Спеціальності</button>
+                <button className="hint-tag" onClick={() => handleSelect('/gurtozhytok')}>Гуртожиток</button>
+                <button className="hint-tag" onClick={() => handleSelect('/pro-koledzh/istoriya-koledzhu')}>Історія коледжу</button>
               </div>
             </div>
           ) : totalResults === 0 ? (
             <div className="no-search-results">
-              <p>За запитом <strong>"{query}"</strong> нічого не знайдено.</p>
+              <p>За запитом <strong>"{query}"</strong> матеріалів не знайдено.</p>
             </div>
           ) : (
             <div className="results-list">
-              {/* Групи розкладу */}
-              {groupResults.length > 0 && (
+              {/* Сторінки сайту */}
+              {pageResults.length > 0 && (
                 <div className="result-category">
-                  <span className="res-cat-title">Академічні групи</span>
-                  {groupResults.map(g => (
+                  <span className="res-cat-title">Розділи та сторінки ({pageResults.length})</span>
+                  {pageResults.map(p => (
                     <div 
-                      key={g.id} 
+                      key={p.slug} 
                       className="search-item"
-                      onClick={() => { onSelectGroup(g.id); onNavigate('schedule'); onClose(); }}
-                    >
-                      <Calendar size={18} className="item-icon" />
-                      <div>
-                        <strong>Розклад групи {g.name}</strong>
-                        <span>{g.department} • {g.course} курс</span>
-                      </div>
-                      <ArrowRight size={14} className="arrow-icon" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Спеціальності */}
-              {specResults.length > 0 && (
-                <div className="result-category">
-                  <span className="res-cat-title">Спеціальності</span>
-                  {specResults.map(s => (
-                    <div 
-                      key={s.id} 
-                      className="search-item"
-                      onClick={() => { onNavigate('specialties'); onClose(); }}
-                    >
-                      <BookOpen size={18} className="item-icon" />
-                      <div>
-                        <strong>{s.code} {s.name}</strong>
-                        <span>{s.degree}</span>
-                      </div>
-                      <ArrowRight size={14} className="arrow-icon" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Викладачі */}
-              {teacherResults.length > 0 && (
-                <div className="result-category">
-                  <span className="res-cat-title">Викладачі та дирекція</span>
-                  {teacherResults.map((t, idx) => (
-                    <div 
-                      key={idx} 
-                      className="search-item"
-                      onClick={() => { onNavigate('administration'); onClose(); }}
-                    >
-                      <User size={18} className="item-icon" />
-                      <div>
-                        <strong>{t.name}</strong>
-                        <span>{t.role}</span>
-                      </div>
-                      <ArrowRight size={14} className="arrow-icon" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Документи */}
-              {docResults.length > 0 && (
-                <div className="result-category">
-                  <span className="res-cat-title">Офіційні документи</span>
-                  {docResults.map(d => (
-                    <div 
-                      key={d.id} 
-                      className="search-item"
-                      onClick={() => { onNavigate('transparency'); onClose(); }}
+                      onClick={() => handleSelect(`/${p.slug}`)}
                     >
                       <FileText size={18} className="item-icon" />
-                      <div>
-                        <strong>{d.title}</strong>
-                        <span>{d.category}</span>
+                      <div className="item-text">
+                        <strong>{p.title}</strong>
+                        <span>/{p.slug}</span>
+                      </div>
+                      <ArrowRight size={14} className="arrow-icon" />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Новини */}
+              {newsResults.length > 0 && (
+                <div className="result-category">
+                  <span className="res-cat-title">Новини та накази ({newsResults.length})</span>
+                  {newsResults.map(n => (
+                    <div 
+                      key={n.slug} 
+                      className="search-item"
+                      onClick={() => handleSelect(`/${n.slug}`)}
+                    >
+                      <Newspaper size={18} className="item-icon" />
+                      <div className="item-text">
+                        <strong>{n.title}</strong>
+                        <span className="news-date-sub">
+                          <Clock size={11} />
+                          {n.date ? new Date(n.date).toLocaleDateString('uk-UA') : ''}
+                        </span>
                       </div>
                       <ArrowRight size={14} className="arrow-icon" />
                     </div>
@@ -157,28 +123,27 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
       <style>{`
         .search-overlay {
           position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(6px);
-          z-index: 2100;
+          inset: 0;
+          background: rgba(15, 23, 42, 0.65);
+          backdrop-filter: blur(4px);
+          z-index: 2000;
           display: flex;
-          align-items: flex-start;
           justify-content: center;
-          padding: 5rem 1.25rem 2rem;
-          animation: fadeIn 0.15s ease-out;
+          align-items: flex-start;
+          padding: 4rem 1rem 1rem;
         }
 
         .search-modal {
-          background: var(--bg-surface-elevated);
-          border: 1px solid var(--border-color);
-          border-radius: var(--radius-lg);
-          max-width: 640px;
+          background: var(--bg-surface, #ffffff);
+          border: 1px solid var(--border-color, #e2e8f0);
+          border-radius: 12px;
+          max-width: 680px;
           width: 100%;
-          box-shadow: var(--shadow-xl);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
           overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          max-height: 80vh;
         }
 
         .search-bar {
@@ -186,76 +151,71 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
           align-items: center;
           gap: 0.75rem;
           padding: 1rem 1.25rem;
-          border-bottom: 1px solid var(--border-color);
+          border-bottom: 1px solid var(--border-color, #e2e8f0);
+          background: var(--bg-muted, #f8fafc);
         }
 
         .search-input-icon {
-          color: var(--primary);
+          color: #2563eb;
           flex-shrink: 0;
         }
 
         .search-modal-input {
           flex: 1;
-          background: transparent;
           border: none;
+          background: transparent;
+          font-size: 1rem;
+          color: var(--text-main, #0f172a);
           outline: none;
-          font-size: 1.05rem;
-          color: var(--text-main);
         }
 
         .search-close-btn {
-          color: var(--text-muted);
+          background: transparent;
+          border: none;
+          color: var(--text-muted, #64748b);
+          cursor: pointer;
           padding: 0.25rem;
-        }
-        .search-close-btn:hover {
-          color: var(--text-main);
         }
 
         .search-results-area {
-          max-height: 440px;
           overflow-y: auto;
-          padding: 1.25rem;
+          padding: 1rem 1.25rem;
         }
 
         .search-hints {
-          display: flex;
-          flex-direction: column;
-          gap: 0.75rem;
+          padding: 1rem 0;
         }
 
         .hint-title {
-          font-size: 0.775rem;
-          color: var(--text-muted);
-          text-transform: uppercase;
+          display: block;
+          font-size: 0.8rem;
           font-weight: 700;
+          text-transform: uppercase;
+          color: var(--text-muted, #64748b);
+          margin-bottom: 0.75rem;
         }
 
         .hint-tags {
           display: flex;
-          gap: 0.5rem;
           flex-wrap: wrap;
+          gap: 0.5rem;
         }
 
         .hint-tag {
-          background: var(--bg-muted);
-          border: 1px solid var(--border-color);
-          border-radius: var(--radius-full);
-          padding: 0.35rem 0.85rem;
+          background: var(--bg-muted, #f1f5f9);
+          border: 1px solid var(--border-color, #e2e8f0);
+          border-radius: 6px;
+          padding: 0.4rem 0.75rem;
           font-size: 0.825rem;
-          color: var(--text-main);
-          font-weight: 500;
-          transition: all 0.15s ease;
-        }
-        .hint-tag:hover {
-          background: var(--primary-subtle);
-          border-color: var(--primary);
-          color: var(--primary);
+          font-weight: 600;
+          color: var(--text-main, #1e293b);
+          cursor: pointer;
+          transition: all 0.15s;
         }
 
-        .no-search-results {
-          text-align: center;
-          padding: 2.5rem 0;
-          color: var(--text-muted);
+        .hint-tag:hover {
+          border-color: #2563eb;
+          color: #2563eb;
         }
 
         .results-list {
@@ -264,56 +224,68 @@ export default function SearchModal({ isOpen, onClose, onSelectGroup, onNavigate
           gap: 1.25rem;
         }
 
-        .result-category {
-          display: flex;
-          flex-direction: column;
-          gap: 0.4rem;
-        }
-
         .res-cat-title {
-          font-size: 0.725rem;
+          font-size: 0.75rem;
           font-weight: 800;
-          color: var(--primary);
           text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: 0.25rem;
+          color: var(--text-muted, #64748b);
+          margin-bottom: 0.5rem;
+          display: block;
         }
 
         .search-item {
           display: flex;
           align-items: center;
-          gap: 0.85rem;
-          padding: 0.75rem;
-          border-radius: var(--radius-md);
-          background: var(--bg-muted);
+          gap: 0.75rem;
+          padding: 0.65rem 0.75rem;
+          border-radius: 8px;
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: background 0.15s;
         }
 
         .search-item:hover {
-          background: var(--primary-subtle);
-          transform: translateX(3px);
+          background: var(--bg-muted, #f8fafc);
         }
 
         .item-icon {
-          color: var(--primary);
+          color: #2563eb;
           flex-shrink: 0;
         }
 
-        .search-item strong {
-          display: block;
-          font-size: 0.9rem;
-          color: var(--text-main);
+        .item-text {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
         }
 
-        .search-item span {
+        .item-text strong {
+          font-size: 0.9rem;
+          color: var(--text-main, #0f172a);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .item-text span {
           font-size: 0.75rem;
-          color: var(--text-muted);
+          color: var(--text-muted, #64748b);
+        }
+
+        .news-date-sub {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.25rem;
         }
 
         .arrow-icon {
-          margin-left: auto;
-          color: var(--text-muted);
+          color: #cbd5e1;
+        }
+
+        .no-search-results {
+          padding: 3rem 1rem;
+          text-align: center;
+          color: var(--text-muted, #64748b);
         }
       `}</style>
     </div>

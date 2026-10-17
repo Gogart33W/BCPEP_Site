@@ -1,9 +1,13 @@
+/* ==========================================================================
+   ВСП «БФКПЕП» — Єдина дизайн-система та глобальні стилі
+   ========================================================================== */
+
 :root {
   --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-heading: 'Outfit', 'Inter', sans-serif;
+  --font-heading: 'Outfit', 'Inter', -apple-system, sans-serif;
 
-  /* Світла тема */
-  --bg-primary: #f8fafc;
+  /* Світла тема: витончена палітра */
+  --bg-base: #f8fafc;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #ffffff;
   --bg-muted: #f1f5f9;
@@ -11,54 +15,67 @@
 
   --border-color: #e2e8f0;
   --border-subtle: #cbd5e1;
+  --border-focus: #3b82f6;
 
   --text-main: #0f172a;
   --text-muted: #64748b;
+  --text-subtle: #94a3b8;
   --text-inverse: #ffffff;
 
   --primary: #1d4ed8;
   --primary-hover: #1e40af;
-  --primary-subtle: #eff6ff;
+  --primary-light: #3b82f6;
+  --primary-subtle: rgba(29, 78, 216, 0.08);
 
   --accent-amber: #d97706;
-  --accent-amber-subtle: #fef3c7;
+  --accent-amber-subtle: rgba(217, 119, 6, 0.1);
 
   --accent-emerald: #059669;
-  --accent-emerald-subtle: #d1fae5;
+  --accent-emerald-subtle: rgba(5, 150, 105, 0.1);
 
   --accent-rose: #e11d48;
-  --accent-rose-subtle: #ffe4e6;
+  --accent-rose-subtle: rgba(225, 29, 72, 0.1);
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.07);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Тіні */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 6px -1px rgba(0, 0, 0, 0.06), 0 1px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 6px 16px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 14px 28px -4px rgba(0, 0, 0, 0.09), 0 4px 10px -3px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 22px 38px -6px rgba(0, 0, 0, 0.12), 0 8px 16px -6px rgba(0, 0, 0, 0.06);
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
-  --header-height: 72px;
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme='dark'] {
-  --bg-primary: #090d16;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #1e293b;
-  --bg-muted: #131c31;
-  --bg-hover: #1e293b;
+  /* Темна тема: глибокий преміальний океанічний слейт */
+  --bg-base: #070b13;
+  --bg-surface: #0e1422;
+  --bg-surface-elevated: #151d30;
+  --bg-muted: #131b2e;
+  --bg-hover: #1c2742;
 
-  --border-color: #1e293b;
-  --border-subtle: #334155;
+  --border-color: #1a233a;
+  --border-subtle: #273554;
+  --border-focus: #60a5fa;
 
-  --text-main: #f8fafc;
+  --text-main: #f1f5f9;
   --text-muted: #94a3b8;
-  --text-inverse: #0f172a;
+  --text-subtle: #64748b;
+  --text-inverse: #070b13;
 
   --primary: #3b82f6;
   --primary-hover: #60a5fa;
-  --primary-subtle: rgba(59, 130, 246, 0.12);
+  --primary-light: #93c5fd;
+  --primary-subtle: rgba(59, 130, 246, 0.14);
 
   --accent-amber: #f59e0b;
   --accent-amber-subtle: rgba(245, 158, 11, 0.15);
@@ -69,25 +86,38 @@
   --accent-rose: #f43f5e;
   --accent-rose-subtle: rgba(244, 63, 94, 0.15);
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 16px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 14px 28px -4px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 22px 38px -6px rgba(0, 0, 0, 0.65);
 }
 
-* {
+/* ==========================================================================
+   Базовий Reset та типографіка
+   ========================================================================== */
+
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  text-size-adjust: 100%;
+}
+
 body {
   font-family: var(--font-main);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-base);
   color: var(--text-main);
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color var(--transition-base), color var(--transition-base);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -95,34 +125,67 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.25;
   color: var(--text-main);
+  letter-spacing: -0.015em;
+}
+
+p {
+  margin-bottom: 1rem;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 button {
   font-family: inherit;
   cursor: pointer;
   border: none;
-  outline: none;
   background: none;
+  outline: none;
+  transition: all var(--transition-fast);
 }
 
 input, select, textarea {
   font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 }
 
-/* Базові утиліти контейнера */
+/* ==========================================================================
+   Утиліти сітки та контейнерів
+   ========================================================================== */
+
 .container {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1260px;
   margin: 0 auto;
   padding: 0 1.25rem;
 }
 
-/* Базові компоненти кнопок */
+@media (min-width: 768px) {
+  .container {
+    padding: 0 1.75rem;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* ==========================================================================
+   Кнопки
+   ========================================================================== */
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -130,47 +193,66 @@ input, select, textarea {
   gap: 0.5rem;
   font-weight: 600;
   font-size: 0.925rem;
-  padding: 0.65rem 1.25rem;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-base);
   white-space: nowrap;
+  user-select: none;
+  text-decoration: none !important;
 }
 
 .btn-primary {
   background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+  border: 1px solid var(--primary);
 }
+
 .btn-primary:hover {
   background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  box-shadow: 0 6px 18px rgba(29, 78, 216, 0.35);
   transform: translateY(-1px);
 }
 
-.btn-secondary {
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
   background: var(--bg-surface);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-}
-.btn-secondary:hover {
-  background: var(--bg-muted);
-  border-color: var(--border-subtle);
+  box-shadow: var(--shadow-xs);
 }
 
-.btn-ghost {
-  color: var(--text-muted);
-}
-.btn-ghost:hover {
-  background: var(--bg-hover);
-  color: var(--text-main);
+.btn-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--bg-muted);
+  transform: translateY(-1px);
 }
 
 .btn-sm {
-  padding: 0.4rem 0.85rem;
+  padding: 0.45rem 0.95rem;
   font-size: 0.825rem;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
 }
 
-/* Бейджі */
+.btn-lg {
+  padding: 0.85rem 1.75rem;
+  font-size: 1.05rem;
+  border-radius: var(--radius-md);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* ==========================================================================
+   Бейджі та теги
+   ========================================================================== */
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -179,8 +261,12 @@ input, select, textarea {
   font-weight: 700;
   padding: 0.25rem 0.65rem;
   border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+}
+
+.badge-blue {
+  background: var(--primary-subtle);
+  color: var(--primary);
 }
 
 .badge-amber {
@@ -198,37 +284,29 @@ input, select, textarea {
   color: var(--accent-rose);
 }
 
-.badge-blue {
-  background: var(--primary-subtle);
+/* ==========================================================================
+   Скролбари та підсвічування тексту
+   ========================================================================== */
+
+::selection {
+  background: rgba(37, 99, 235, 0.2);
   color: var(--primary);
 }
 
-/* Анімація заміни */
-@keyframes pulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(225, 29, 72, 0);
-  }
-}
-
-.pulse-badge {
-  animation: pulseGlow 2s infinite ease-in-out;
-}
-
-/* Скролбар */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: var(--bg-primary);
+  background: var(--bg-base);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border-subtle);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }

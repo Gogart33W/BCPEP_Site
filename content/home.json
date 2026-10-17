@@ -1,0 +1,50 @@
+{
+  "video": {
+    "src": "/uploads/2023/04/virtualna-ekskursiya-po-berdychivskomu-fahovomu-koledzhi-promyslovosti-ekonomiky-ta-prava.mp4",
+    "poster": "/uploads/2023/04/4.jpg"
+  },
+  "tiles": [
+    {
+      "href": "/pro-koledzh/istoriya-koledzhu",
+      "image": "/uploads/2022/11/56567548o.png",
+      "title": "56567548о"
+    },
+    {
+      "href": "/pamyatayemo-zagyblyh-u-vijni",
+      "image": "/uploads/2024/09/untitled.png",
+      "title": "Untitled"
+    }
+  ],
+  "partners": [
+    {
+      "href": "https://www.knuba.edu.ua/",
+      "image": "/uploads/2022/10/knuba.png",
+      "title": "knuba"
+    },
+    {
+      "href": "https://kymu.edu.ua/",
+      "image": "/uploads/2022/10/kymu.png",
+      "title": "kymu"
+    },
+    {
+      "href": "https://op.edu.ua/",
+      "image": "/uploads/2022/10/op.png",
+      "title": "op"
+    },
+    {
+      "href": "https://nuft.edu.ua/",
+      "image": "/uploads/2022/10/nuft.png",
+      "title": "nuft"
+    },
+    {
+      "href": "https://ztu.edu.ua/",
+      "image": "/uploads/2022/10/ztu.png",
+      "title": "ztu"
+    },
+    {
+      "href": "https://zu.edu.ua/",
+      "image": "/uploads/2022/10/zu.png",
+      "title": "zu"
+    }
+  ]
+}

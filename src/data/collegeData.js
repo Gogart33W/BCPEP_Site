@@ -8,10 +8,7 @@ export const COLLEGE_INFO = {
   phoneCourses: '+380 (97) 554-54-20',
   email: 'bcpep@ukr.net',
   emailAdmissions: 'vstup@bcpep.org.ua',
-  telegram: 'https://t.me/bcpep',
   social: {
-    facebook: 'https://www.facebook.com/%D0%91%D0%B5%D1%80%D0%B4%D0%B8%D1%87%D1%96%D0%B2%D1%81%D1%8C%D0%BA%D0%B8%D0%B9-%D1%84%D0%B0%D1%85%D0%BE%D0%B2%D0%B8%D0%B9-%D0%BA%D0%BE%D0%BB%D0%B5%D0%B4%D0%B6-%D0%BF%D1%80%D0%BE%D0%BC%D0%B8%D1%81%D0%BB%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D1%96-%D0%B5%D0%BA%D0%BE%D0%BD%D0%BE%D0%BC%D1%96%D0%BA%D0%B8-%D1%82%D0%B0-%D0%BF%D1%80%D0%B0%D0%B2%D0%B0-107888211930267/',
-    instagram: 'https://instagram.com/bcpep_official?igshid=NmNmNjAwNzg=',
     youtube: 'https://www.youtube.com/channel/UCku8dpAWRGjQ6QgBSHN5CWw'
   },
   iban: 'UA128201720343160001000034567',
@@ -455,3 +452,11 @@ export const OFFICIAL_DOCUMENTS = [
     pdfUrl: 'https://www.bfcpep.org.ua/wp-content/uploads/2022/10/buling.pdf'
   }
 ];
+
+// Аліаси для сумісності з API та CMS компонентами
+export const COLLEGE_NEWS = REAL_NEWS;
+export const ACADEMIC_GROUPS = GROUPS;
+export const SPECIALTIES_DATA = SPECIALTIES;
+export const ADMINISTRATION_MEMBERS = ADMINISTRATION;
+export const SATURDAY_BELL_SCHEDULE = BELL_SCHEDULE_SATURDAY;
+export const WEEKDAY_BELL_SCHEDULE = BELL_SCHEDULE_WEEKDAY;

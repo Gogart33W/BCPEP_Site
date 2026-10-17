@@ -1,0 +1,266 @@
+[
+  {
+    "title": "Головна",
+    "path": "/"
+  },
+  {
+    "title": "Про коледж",
+    "path": "/pro-koledzh",
+    "children": [
+      {
+        "title": "Історія коледжу",
+        "path": "/pro-koledzh/istoriya-koledzhu"
+      },
+      {
+        "title": "Структура та органи управління",
+        "path": "/struktura-ta-organy-upravlinnya"
+      },
+      {
+        "title": "Структурні підрозділи",
+        "path": "/pro-koledzh/struktura",
+        "children": [
+          {
+            "title": "Керівний склад",
+            "path": "/pro-koledzh/struktura/administracziya"
+          },
+          {
+            "title": "Циклові комісії",
+            "path": "/pro-koledzh/struktura/czyklovi-komisiyi"
+          },
+          {
+            "title": "Відділення",
+            "path": "/viddilennya"
+          },
+          {
+            "title": "Навчально-методичний кабінет",
+            "path": "/navchalno-metodychnyj-kabinet"
+          },
+          {
+            "title": "Бібліотека",
+            "path": "/biblioteka"
+          },
+          {
+            "title": "Навчально-виробничі майстерні",
+            "path": "/navchalno-vyrobnychi-majsterni"
+          }
+        ]
+      },
+      {
+        "title": "Віртуальна екскурсія",
+        "path": "/virtualna-ekskursiya"
+      },
+      {
+        "title": "Контакти",
+        "path": "/kontakty"
+      }
+    ]
+  },
+  {
+    "title": "Освітня діяльність",
+    "path": "/osvitnya-diyalnist",
+    "children": [
+      {
+        "title": "Спеціальності",
+        "path": "/abituriyentu/speczialnosti",
+        "children": [
+          {
+            "title": "Інженерія програмного забезпечення",
+            "path": "/abituriyentu/speczialnosti/inzheneriya-programnogo-zabezpechennya"
+          },
+          {
+            "title": "Машинобудування",
+            "path": "/abituriyentu/speczialnosti/galuzeve-mashynobuduvannya"
+          },
+          {
+            "title": "Менеджмент",
+            "path": "/abituriyentu/speczialnosti/ekonomika"
+          },
+          {
+            "title": "Металургія",
+            "path": "/abituriyentu/speczialnosti/metalurgiya"
+          },
+          {
+            "title": "Облік і оподаткування",
+            "path": "/abituriyentu/speczialnosti/oblik-i-opodatkuvannya"
+          },
+          {
+            "title": "Фінанси, банківська справа, страхування та фондовий ринок",
+            "path": "/abituriyentu/speczialnosti/finansy-bankivska-sprava-ta-strahuvannya"
+          },
+          {
+            "title": "Фізична культура і спорт",
+            "path": "/abituriyentu/speczialnosti/fizychna-kultura-i-sport"
+          },
+          {
+            "title": "Секретарська та офісна справа",
+            "path": "/abituriyentu/speczialnosti/pravo"
+          }
+        ]
+      },
+      {
+        "title": "Освітньо-професійні програми",
+        "path": "/osvitno-profesijni-programy"
+      },
+      {
+        "title": "Практична підготовка",
+        "path": "/praktychna-pidgotovka"
+      },
+      {
+        "title": "Забезпечення якості освіти",
+        "path": "/zabezpechennya-yakosti-osvity",
+        "children": [
+          {
+            "title": "Результати моніторингу якості освіти",
+            "path": "/rezultaty-monitoryngu-yakosti-osvity"
+          },
+          {
+            "title": "Моніторинг працевлаштування випускників",
+            "path": "/monitoryng-praczevlashtuvannya-vypusknykiv"
+          }
+        ]
+      },
+      {
+        "title": "Методичне забезпечення",
+        "path": "/metodychne-zabezpechennya",
+        "children": [
+          {
+            "title": "Методичні матеріали",
+            "path": "/studentu/metodychni-materialy"
+          },
+          {
+            "title": "Орієнтовні плани підвищення кваліфікації викладачів",
+            "path": "/oriyentovni-plany-pidvyshhennya-kvalifikacziyi-vykladachiv"
+          }
+        ]
+      },
+      {
+        "title": "Нормативні та стратегічні документи",
+        "path": "/normatyvni-ta-strategichni-dokumenty",
+        "children": [
+          {
+            "title": "Мова освітнього процесу",
+            "path": "/mova-osvitnogo-proczesu"
+          },
+          {
+            "title": "Концепція освітньої діяльності",
+            "path": "/konczepcziya-osvitnoyi-diyalnosti"
+          },
+          {
+            "title": "Стратегія розвитку",
+            "path": "/strategiya-rozvytku"
+          }
+        ]
+      },
+      {
+        "title": "Графік освітнього процесу",
+        "path": "/grafik-osvitnogo-proczesu"
+      }
+    ]
+  },
+  {
+    "title": "Прозорість",
+    "path": "/pro-koledzh/publichna-informacziya",
+    "children": [
+      {
+        "title": "Статут, ліцензії та акредитація",
+        "path": "/ustanovchi-dokumenty"
+      },
+      {
+        "title": "Внутрішні нормативні документи",
+        "path": "/vnutrishni-normatyvni-dokumenty"
+      },
+      {
+        "title": "Управлінська діяльність та самооцінювання",
+        "path": "/upravlinska-diyalnist-ta-samooczinyuvannya"
+      },
+      {
+        "title": "Кадрове забезпечення",
+        "path": "/kadrova-dokumentacziya"
+      },
+      {
+        "title": "Матеріально-технічне забезпечення",
+        "path": "/materialno-tehnichne-zabezpechennya"
+      },
+      {
+        "title": "Фінанси та доброчесність",
+        "path": "/finansovo-byudzhetna-zvitnist"
+      },
+      {
+        "title": "Безпека учасників освітнього процесу",
+        "path": "/bezpeka-uchasnykiv-osvitnogo-proczesu",
+        "children": [
+          {
+            "title": "Цивільна безпека",
+            "path": "/czyvilna-bezpeka"
+          },
+          {
+            "title": "Запобігання та протидія булінгу і насильству",
+            "path": "/zapobigannya-ta-protydiya-bulingu"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Вступнику",
+    "path": "/abituriyentu",
+    "children": [
+      {
+        "title": "Вступ 2026",
+        "path": "/abituriyentu/vstup"
+      },
+      {
+        "title": "Вартість навчання",
+        "path": "/abituriyentu/vartist-navchannya"
+      },
+      {
+        "title": "Підготовчі курси",
+        "path": "/abituriyentu/pidgotovchi-kursy-2"
+      },
+      {
+        "title": "Підготовка до НМТ",
+        "path": "/studentu/pidgotovka-do-nmt"
+      },
+      {
+        "title": "Вступникам з ТОТ та територій активних бойових дій",
+        "path": "/vstupnykam-z-tot-ta-terytorij-aktyvnyh-bojovyh-dij"
+      }
+    ]
+  },
+  {
+    "title": "Студенту",
+    "path": "/studentu",
+    "children": [
+      {
+        "title": "Рейтингові списки успішності",
+        "path": "/studentu/rejtyngovi-spysky-uspishnosti"
+      },
+      {
+        "title": "Гуртожиток",
+        "path": "/gurtozhytok"
+      },
+      {
+        "title": "Реквізити для оплати",
+        "path": "/studentu/rekvizyty-dlya-oplaty"
+      },
+      {
+        "title": "Сторінка психолога",
+        "path": "/studentu/storinka-psyhologa"
+      }
+    ]
+  },
+  {
+    "title": "Розклад",
+    "path": "/rozklad-zanyat",
+    "children": [
+      {
+        "title": "Розклад занять",
+        "path": "/rozklad-zanyat/rozklad-zanyat"
+      },
+      {
+        "title": "Розклад екзаменів",
+        "path": "/rozklad-zanyat/rozklad-ekzameniv"
+      }
+    ]
+  }
+]
