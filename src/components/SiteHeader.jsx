@@ -9,6 +9,7 @@ import menuData from '../../content/menu.json';
 export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [pinnedDropdown, setPinnedDropdown] = useState(null);
   const [mobileExpanded, setMobileExpanded] = useState({});
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -25,45 +26,86 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
   useEffect(() => {
     setMobileOpen(false);
     setActiveDropdown(null);
+    setPinnedDropdown(null);
   }, [location.pathname]);
+
+  // Блокування скролу фонової сторінки при відкритому мобільному меню
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   const openTimerRef = React.useRef(null);
   const closeTimerRef = React.useRef(null);
 
   const handleMouseEnter = (idx) => {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    if (activeDropdown !== null) {
+    if (openTimerRef.current) clearTimeout(openTimerRef.current);
+
+    if (activeDropdown !== null || pinnedDropdown !== null) {
       setActiveDropdown(idx);
     } else {
       openTimerRef.current = setTimeout(() => {
         setActiveDropdown(idx);
-      }, 100);
+      }, 90);
     }
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (idx) => {
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
+
+    // Якщо вкладка закріплена кліком — не закриваємо при відведенні миші!
+    if (pinnedDropdown === idx) return;
+
     closeTimerRef.current = setTimeout(() => {
-      setActiveDropdown(null);
-    }, 320);
+      setPinnedDropdown(currentPinned => {
+        if (currentPinned !== idx) {
+          setActiveDropdown(null);
+        }
+        return currentPinned;
+      });
+    }, 400);
   };
 
   const handleToggleDropdown = (idx, e) => {
     e.preventDefault();
+    e.stopPropagation();
     if (openTimerRef.current) clearTimeout(openTimerRef.current);
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    setActiveDropdown(prev => (prev === idx ? null : idx));
+
+    if (pinnedDropdown === idx) {
+      setPinnedDropdown(null);
+      setActiveDropdown(null);
+    } else {
+      setPinnedDropdown(idx);
+      setActiveDropdown(idx);
+    }
+  };
+
+  const toggleMobileGroup = (idx) => {
+    setMobileExpanded(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
   };
 
   useEffect(() => {
     const handleGlobalClick = (e) => {
       if (!e.target.closest('.desktop-nav')) {
         setActiveDropdown(null);
+        setPinnedDropdown(null);
       }
     };
     const handleGlobalKey = (e) => {
       if (e.key === 'Escape') {
         setActiveDropdown(null);
+        setPinnedDropdown(null);
         setMobileOpen(false);
       }
     };
@@ -127,10 +169,11 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
             </div>
           </Link>
 
-          {/* Десктопне меню з багаторівневою випадаючою структурою */}
+          {/* Десктопне меню з закріпленням та плавною анімацією */}
           <nav className="desktop-nav" aria-label="Головне меню">
             {menuData.map((item, idx) => {
               const hasKids = item.children && item.children.length > 0;
+              const isCurrentOpen = activeDropdown === idx || pinnedDropdown === idx;
               const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
 
               if (!hasKids) {
@@ -152,26 +195,26 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
               return (
                 <div 
                   key={idx}
-                  className={`nav-dropdown-wrapper ${isMega ? 'has-mega' : ''}`}
+                  className={`nav-dropdown-wrapper ${isMega ? 'has-mega' : ''} ${isCurrentOpen ? 'is-open' : ''}`}
                   onMouseEnter={() => handleMouseEnter(idx)}
-                  onMouseLeave={handleMouseLeave}
+                  onMouseLeave={() => handleMouseLeave(idx)}
                 >
                   <button 
                     type="button"
                     onClick={(e) => handleToggleDropdown(idx, e)}
-                    className={`nav-item-link has-dropdown ${isActive ? 'active' : ''}`}
-                    aria-expanded={activeDropdown === idx}
+                    className={`nav-item-link has-dropdown ${isActive ? 'active' : ''} ${isCurrentOpen ? 'menu-open' : ''}`}
+                    aria-expanded={isCurrentOpen}
                   >
                     <span>{item.title}</span>
-                    <ChevronDown size={14} className={`dropdown-caret ${activeDropdown === idx ? 'rotated' : ''}`} />
+                    <ChevronDown size={14} className={`dropdown-caret ${isCurrentOpen ? 'rotated' : ''}`} />
                   </button>
 
-                  {activeDropdown === idx && (
+                  {isCurrentOpen && (
                     <div 
                       className={`dropdown-menu-box ${isMega ? 'dropdown-mega-box' : ''}`}
                       role="menu"
                       onMouseEnter={() => handleMouseEnter(idx)}
-                      onMouseLeave={handleMouseLeave}
+                      onMouseLeave={() => handleMouseLeave(idx)}
                     >
                       {isMega ? (
                         <div className="mega-menu-grid">
@@ -184,7 +227,10 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
                                   key={sIdx}
                                   to={sub.path} 
                                   className="dropdown-link"
-                                  onClick={() => setActiveDropdown(null)}
+                                  onClick={() => {
+                                    setActiveDropdown(null);
+                                    setPinnedDropdown(null);
+                                  }}
                                 >
                                   <span>{sub.title}</span>
                                 </Link>
@@ -199,7 +245,10 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
                                 <Link 
                                   to={group.path} 
                                   className="mega-group-header"
-                                  onClick={() => setActiveDropdown(null)}
+                                  onClick={() => {
+                                    setActiveDropdown(null);
+                                    setPinnedDropdown(null);
+                                  }}
                                 >
                                   <span>{group.title}</span>
                                   <ChevronRight size={13} />
@@ -211,7 +260,10 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
                                       key={cIdx}
                                       to={child.path} 
                                       className="dropdown-link sub-child-link"
-                                      onClick={() => setActiveDropdown(null)}
+                                      onClick={() => {
+                                        setActiveDropdown(null);
+                                        setPinnedDropdown(null);
+                                      }}
                                     >
                                       <span>{child.title}</span>
                                     </Link>
@@ -228,7 +280,10 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
                               key={sIdx}
                               to={sub.path} 
                               className="dropdown-link"
-                              onClick={() => setActiveDropdown(null)}
+                              onClick={() => {
+                                setActiveDropdown(null);
+                                setPinnedDropdown(null);
+                              }}
                             >
                               <span>{sub.title}</span>
                             </Link>
@@ -275,16 +330,24 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
         </div>
       </div>
 
-      {/* Мобільне меню-висувка з акордеонами */}
+      {/* Мобільне меню-висувка з акордеонами та гарантованим кліком */}
       {mobileOpen && (
         <div className="mobile-drawer">
           <div className="container mobile-drawer-inner">
             <div className="mobile-quick-actions">
-              <Link to="/rozklad-zanyat/rozklad-zanyat" className="mobile-cta-btn">
+              <Link 
+                to="/rozklad-zanyat/rozklad-zanyat" 
+                className="mobile-cta-btn"
+                onClick={() => setMobileOpen(false)}
+              >
                 <Calendar size={16} />
                 <span>Розклад та дзвінки</span>
               </Link>
-              <button className="mobile-search-btn" onClick={() => { setMobileOpen(false); onOpenSearch(); }}>
+              <button 
+                type="button"
+                className="mobile-search-btn" 
+                onClick={() => { setMobileOpen(false); onOpenSearch(); }}
+              >
                 <Search size={16} />
                 <span>Пошук</span>
               </button>
@@ -293,53 +356,72 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
             <nav className="mobile-nav-tree">
               {menuData.map((item, idx) => {
                 const hasKids = item.children && item.children.length > 0;
-                const isExpanded = mobileExpanded[idx];
+                const isExpanded = !!mobileExpanded[idx];
 
                 return (
                   <div key={idx} className="mobile-nav-block">
-                    <div className="mobile-nav-row">
+                    {hasKids ? (
+                      <button 
+                        type="button"
+                        className="mobile-nav-row-btn"
+                        onClick={() => toggleMobileGroup(idx)}
+                        aria-expanded={isExpanded}
+                      >
+                        <span className="mobile-root-title">{item.title}</span>
+                        <ChevronDown size={18} className={`mobile-caret ${isExpanded ? 'rotated' : ''}`} />
+                      </button>
+                    ) : (
                       <Link 
                         to={item.path} 
-                        className="mobile-root-link"
+                        className="mobile-nav-row-link"
+                        onClick={() => setMobileOpen(false)}
                       >
-                        {item.title}
+                        <span className="mobile-root-title">{item.title}</span>
+                        <ChevronRight size={16} className="mobile-caret" />
                       </Link>
-                      {hasKids && (
-                        <button 
-                          className="mobile-accordion-btn"
-                          onClick={() => toggleMobileGroup(idx)}
-                          aria-label="Розгорнути підпункти"
-                        >
-                          <ChevronDown size={18} className={isExpanded ? 'rotated' : ''} />
-                        </button>
-                      )}
-                    </div>
+                    )}
 
                     {hasKids && isExpanded && (
                       <div className="mobile-sub-list">
-                        {item.children.map((sub, sIdx) => (
-                          <div key={sIdx} className="mobile-sub-group">
-                            <Link 
-                              to={sub.path} 
-                              className="mobile-sub-link"
-                            >
-                              {sub.title}
-                            </Link>
-                            {sub.children && (
-                              <div className="mobile-third-list">
-                                {sub.children.map((third, tIdx) => (
-                                  <Link 
-                                    key={tIdx}
-                                    to={third.path} 
-                                    className="mobile-third-link"
-                                  >
-                                    — {third.title}
-                                  </Link>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                        {item.path && item.path !== '#' && (
+                          <Link 
+                            to={item.path} 
+                            className="mobile-sub-link mobile-overview-link"
+                            onClick={() => setMobileOpen(false)}
+                          >
+                            <span>📌 Огляд розділу «{item.title}»</span>
+                            <ChevronRight size={14} />
+                          </Link>
+                        )}
+                        {item.children.map((sub, sIdx) => {
+                          const hasThird = sub.children && sub.children.length > 0;
+                          return (
+                            <div key={sIdx} className="mobile-sub-group">
+                              <Link 
+                                to={sub.path} 
+                                className="mobile-sub-link"
+                                onClick={() => setMobileOpen(false)}
+                              >
+                                <span>{sub.title}</span>
+                                {hasThird ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                              </Link>
+                              {hasThird && (
+                                <div className="mobile-third-list">
+                                  {sub.children.map((third, tIdx) => (
+                                    <Link 
+                                      key={tIdx}
+                                      to={third.path} 
+                                      className="mobile-third-link"
+                                      onClick={() => setMobileOpen(false)}
+                                    >
+                                      <span>— {third.title}</span>
+                                    </Link>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -502,74 +584,79 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
         .nav-item-link {
           display: inline-flex;
           align-items: center;
-          gap: 0.3rem;
-          padding: 0.5rem 0.75rem;
+          gap: 0.35rem;
+          padding: 0.5rem 0.8rem;
           font-size: 0.875rem;
           font-weight: 600;
           color: var(--text-main);
           border-radius: var(--radius-sm);
-          transition: all var(--transition-fast);
+          transition: background-color var(--transition-fast), color var(--transition-fast);
+          cursor: pointer;
+          user-select: none;
         }
 
-        .nav-item-link:hover, .nav-item-link.active {
+        .nav-item-link:hover, 
+        .nav-item-link.menu-open,
+        .nav-item-link.active {
           color: var(--primary);
           background: var(--primary-subtle);
         }
 
         .dropdown-caret {
           color: var(--text-muted);
-          transition: transform var(--transition-fast);
+          transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), color 0.22s;
         }
 
-        .dropdown-caret.rotated,
-        .nav-dropdown-wrapper:hover .dropdown-caret {
+        .dropdown-caret.rotated {
           transform: rotate(180deg);
           color: var(--primary);
         }
 
-        /* Випадаюче меню без розривів */
+        /* Випадаюче меню: плавне, закріплене, без втрати фокусу */
         .dropdown-menu-box {
           position: absolute;
-          top: 100%;
+          top: calc(100% + 4px);
           left: 0;
-          min-width: 280px;
+          min-width: 290px;
           background: var(--bg-surface);
           border: 1px solid var(--border-color);
           border-radius: var(--radius-md);
-          box-shadow: var(--shadow-xl);
-          padding: 0.5rem;
+          box-shadow: 0 20px 45px -8px rgba(0, 0, 0, 0.22), 0 0 0 1px var(--border-color);
+          padding: 0.65rem;
           display: flex;
           flex-direction: column;
-          gap: 0.2rem;
-          z-index: 1100;
-          animation: dropIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+          gap: 0.25rem;
+          z-index: 1200;
+          animation: navReveal 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          transform-origin: top center;
         }
 
-        /* Невидимий міст, що не дає курсору втратити фокус при русі вниз */
+        /* Невидимий міст, що на 100% запобігає закриттю меню при русі мишки */
         .dropdown-menu-box::before {
           content: '';
           position: absolute;
-          top: -14px;
-          left: 0;
-          right: 0;
-          height: 14px;
+          top: -20px;
+          left: -15px;
+          right: -15px;
+          height: 24px;
+          background: transparent;
         }
 
-        @keyframes dropIn {
+        @keyframes navReveal {
           from {
             opacity: 0;
-            transform: translateY(-6px);
+            transform: translateY(-8px) scale(0.99);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
         }
 
         .dropdown-single-list {
           display: flex;
           flex-direction: column;
-          gap: 0.2rem;
+          gap: 0.25rem;
         }
 
         .dropdown-link {
@@ -577,30 +664,30 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           justify-content: space-between;
           align-items: center;
           padding: 0.6rem 0.9rem;
-          font-size: 0.85rem;
+          font-size: 0.875rem;
           font-weight: 500;
           color: var(--text-main);
           border-radius: var(--radius-sm);
-          transition: all var(--transition-fast);
+          transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
           text-decoration: none;
         }
 
         .dropdown-link:hover {
           background: var(--primary-subtle);
           color: var(--primary);
-          padding-left: 1.05rem;
+          transform: translateX(3px);
         }
 
-        /* Мега-меню для багаторівневих списків (без розривів та вильотів) */
+        /* Мега-меню для розгалужених списків */
         .dropdown-mega-box {
-          min-width: 620px;
-          padding: 0.85rem;
+          min-width: 640px;
+          padding: 1rem;
         }
 
         .mega-menu-grid {
           display: grid;
-          grid-template-columns: 210px 1fr;
-          gap: 1rem;
+          grid-template-columns: 220px 1fr;
+          gap: 1.25rem;
         }
 
         .mega-col-main {
@@ -608,22 +695,22 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           flex-direction: column;
           gap: 0.35rem;
           border-right: 1px solid var(--border-color);
-          padding-right: 0.85rem;
+          padding-right: 1rem;
         }
 
         .mega-section-label {
           font-size: 0.725rem;
-          font-weight: 700;
+          font-weight: 800;
           text-transform: uppercase;
           color: var(--text-muted);
-          letter-spacing: 0.04em;
-          padding: 0.25rem 0.5rem;
+          letter-spacing: 0.05em;
+          padding: 0.25rem 0.6rem;
         }
 
         .mega-links-list {
           display: flex;
           flex-direction: column;
-          gap: 0.2rem;
+          gap: 0.25rem;
         }
 
         .mega-col-sub {
@@ -642,27 +729,30 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          font-size: 0.825rem;
+          font-size: 0.85rem;
           font-weight: 700;
           color: var(--primary);
-          padding: 0.25rem 0.5rem;
+          padding: 0.3rem 0.6rem;
           border-radius: var(--radius-xs);
           text-decoration: none;
+          background: var(--primary-subtle);
+          width: fit-content;
         }
 
         .mega-group-header:hover {
-          background: var(--primary-subtle);
+          background: var(--primary);
+          color: #ffffff;
         }
 
         .mega-sub-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 0.35rem;
+          gap: 0.4rem;
         }
 
         .sub-child-link {
-          padding: 0.45rem 0.65rem;
-          font-size: 0.8rem;
+          padding: 0.5rem 0.75rem;
+          font-size: 0.825rem;
           background: var(--bg-muted);
           border-radius: var(--radius-xs);
           line-height: 1.35;
@@ -670,7 +760,8 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
         .sub-child-link:hover {
           background: var(--primary-subtle);
-          padding-left: 0.85rem;
+          color: var(--primary);
+          transform: translateX(2px);
         }
 
         /* Кнопки дій: пошук та перемикач теми */
@@ -690,7 +781,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           background: var(--bg-surface);
           color: var(--text-muted);
           font-size: 0.825rem;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
           transition: all var(--transition-fast);
           box-shadow: var(--shadow-xs);
@@ -748,13 +839,11 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           border-radius: var(--radius-sm);
         }
 
-        /* Мобільне меню */
+        /* Мобільне меню-висувка */
         .mobile-drawer {
           background: var(--bg-surface);
           border-top: 1px solid var(--border-color);
-          max-height: calc(100vh - 120px);
-          overflow-y: auto;
-          padding: 1.25rem 0 2rem;
+          padding: 1.25rem 0 3rem;
           box-shadow: var(--shadow-xl);
         }
 
@@ -773,11 +862,13 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           justify-content: center;
           gap: 0.5rem;
           background: var(--primary);
-          color: #ffffff;
-          padding: 0.65rem 1rem;
+          color: #ffffff !important;
+          padding: 0.75rem 1rem;
           border-radius: var(--radius-sm);
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: 0.875rem;
+          font-weight: 700;
+          text-decoration: none;
+          box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
         }
 
         .mobile-search-btn {
@@ -788,85 +879,114 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           background: var(--bg-muted);
           color: var(--text-main);
           border: 1px solid var(--border-color);
-          padding: 0.65rem 1rem;
+          padding: 0.75rem 1rem;
           border-radius: var(--radius-sm);
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: 0.875rem;
+          font-weight: 700;
+          cursor: pointer;
         }
 
         .mobile-nav-tree {
           display: flex;
           flex-direction: column;
-          gap: 0.5rem;
+          gap: 0.35rem;
         }
 
         .mobile-nav-block {
           border-bottom: 1px solid var(--border-color);
-          padding-bottom: 0.5rem;
+          padding-bottom: 0.35rem;
         }
 
-        .mobile-nav-row {
+        .mobile-nav-row-btn,
+        .mobile-nav-row-link {
+          width: 100%;
           display: flex;
           justify-content: space-between;
           align-items: center;
-        }
-
-        .mobile-root-link {
-          font-family: var(--font-heading);
+          padding: 0.85rem 0.5rem;
+          border-radius: var(--radius-sm);
+          color: var(--text-main);
           font-size: 1.05rem;
           font-weight: 700;
-          color: var(--text-main);
-          padding: 0.5rem 0;
-          flex: 1;
+          font-family: var(--font-heading);
+          cursor: pointer;
+          text-decoration: none;
+          background: transparent;
+          border: none;
+          text-align: left;
+          touch-action: manipulation;
         }
 
-        .mobile-accordion-btn {
-          width: 36px;
-          height: 36px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .mobile-nav-row-btn:active,
+        .mobile-nav-row-link:active {
+          background: var(--bg-muted);
+        }
+
+        .mobile-caret {
           color: var(--text-muted);
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          flex-shrink: 0;
         }
 
-        .mobile-accordion-btn .rotated {
+        .mobile-caret.rotated {
           transform: rotate(180deg);
+          color: var(--primary);
         }
 
         .mobile-sub-list {
-          padding-left: 0.75rem;
+          padding-left: 0.5rem;
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
-          margin-top: 0.25rem;
+          margin: 0.35rem 0 0.85rem;
           border-left: 2px solid var(--primary-subtle);
         }
 
-        .mobile-sub-link {
-          display: block;
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: var(--text-main);
-          padding: 0.4rem 0.5rem;
-          border-radius: var(--radius-xs);
+        .mobile-overview-link {
+          font-weight: 700 !important;
+          color: var(--primary) !important;
+          background: var(--primary-subtle);
         }
 
-        .mobile-sub-link:hover {
+        .mobile-sub-link {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 0.925rem;
+          font-weight: 600;
+          color: var(--text-main);
+          padding: 0.65rem 0.75rem;
+          border-radius: var(--radius-xs);
+          text-decoration: none;
+          touch-action: manipulation;
+        }
+
+        .mobile-sub-link:active {
+          background: var(--bg-muted);
           color: var(--primary);
         }
 
         .mobile-third-list {
-          padding-left: 1rem;
+          padding-left: 0.75rem;
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
-          margin-top: 0.2rem;
+          margin: 0.25rem 0;
         }
 
         .mobile-third-link {
-          font-size: 0.825rem;
+          font-size: 0.85rem;
           color: var(--text-muted);
-          padding: 0.25rem 0.5rem;
+          padding: 0.45rem 0.65rem;
+          border-radius: var(--radius-xs);
+          text-decoration: none;
+          line-height: 1.35;
+          touch-action: manipulation;
+        }
+
+        .mobile-third-link:active {
+          color: var(--primary);
+          background: var(--bg-muted);
         }
 
         /* Адаптивність під мобільні та планшети */
@@ -898,7 +1018,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           }
 
           .brand-acronym {
-            font-size: 1.05rem;
+            font-size: 1.1rem;
           }
 
           .brand-title {
@@ -928,16 +1048,28 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
           .mobile-drawer {
             position: fixed;
-            top: 55px;
+            top: 54px;
             left: 0;
             right: 0;
             bottom: 0;
-            max-height: calc(100vh - 55px);
-            z-index: 1200;
-            padding: 1rem 0 3rem;
+            width: 100%;
+            height: calc(100dvh - 54px);
+            max-height: none;
+            z-index: 9999;
+            padding: 1rem 1rem 4rem;
             background: var(--bg-surface);
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .brand-title {
+            display: none;
+          }
+          .brand-acronym {
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
           }
         }
 

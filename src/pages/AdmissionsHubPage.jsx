@@ -737,12 +737,102 @@ export default function AdmissionsHubPage() {
         }
 
         @media (max-width: 768px) {
-          .admissions-hero-title {
-            font-size: 2.2rem;
+          .admissions-hub {
+            padding-top: 1rem;
+            padding-bottom: 3rem;
           }
+
+          .admissions-hero {
+            padding: 2rem 1rem 1.75rem;
+            margin-bottom: 1.5rem;
+          }
+
+          .admissions-hero-badge {
+            font-size: 0.775rem;
+            padding: 0.25rem 0.65rem;
+            margin-bottom: 0.75rem;
+          }
+
+          .admissions-hero-title {
+            font-size: 1.85rem;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+          }
+
+          .admissions-hero-subtitle {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 1.35rem;
+          }
+
+          .admissions-cta-row {
+            flex-direction: column;
+            width: 100%;
+            gap: 0.65rem;
+          }
+
+          .admissions-cta-row .btn {
+            width: 100%;
+            justify-content: center;
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            white-space: normal;
+            text-align: center;
+          }
+
+          .admissions-stats-strip {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.65rem;
+            margin-bottom: 2rem;
+          }
+
+          .stat-pill {
+            padding: 0.85rem 0.75rem;
+          }
+
+          .stat-pill-num {
+            font-size: 1.5rem;
+          }
+
+          .stat-pill-lbl {
+            font-size: 0.725rem;
+            margin-top: 0.2rem;
+          }
+
+          .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+          }
+
+          .section-title {
+            font-size: 1.4rem;
+          }
+
+          .links-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 0.85rem;
+          }
+
+          .link-card-box {
+            padding: 1.15rem;
+          }
+
           .hotline-card {
             flex-direction: column;
             align-items: flex-start;
+            gap: 1rem;
+          }
+
+          .hotline-actions {
+            width: 100%;
+            flex-direction: column;
+          }
+
+          .hotline-phone-btn, .hotline-email-btn {
+            width: 100%;
+            justify-content: center;
           }
         }
       `}</style>
