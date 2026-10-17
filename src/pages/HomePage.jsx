@@ -1000,23 +1000,73 @@ export default function HomePage() {
         }
 
         @media (max-width: 900px) {
-          .hero-container, .media-tiles-grid, .notice-formats-grid {
-            grid-template-columns: 1fr;
-          }
-          .notice-info-bar {
+          .hero-container, .media-tiles-grid {
             grid-template-columns: 1fr;
           }
           .hero-title {
             font-size: 1.85rem;
           }
+          .hero-stats {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+          }
+          .stat-card {
+            padding: 0.85rem 0.5rem;
+          }
+          .stat-number {
+            font-size: 1.5rem;
+          }
+          .stat-label {
+            font-size: 0.725rem;
+          }
         }
 
         @media (max-width: 640px) {
+          .hero-banner {
+            padding: 1.75rem 0 1.25rem;
+          }
+          .hero-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+          }
+          .hero-title {
+            font-size: 1.55rem;
+            line-height: 1.25;
+            margin-bottom: 0.75rem;
+          }
+          .hero-desc {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+          }
+          .hero-buttons {
+            flex-direction: column;
+            width: 100%;
+            gap: 0.65rem;
+          }
+          .hero-buttons .btn {
+            width: 100%;
+            justify-content: center;
+          }
+          .hero-stats {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.4rem;
+          }
+          .stat-card {
+            padding: 0.65rem 0.35rem;
+          }
+          .stat-number {
+            font-size: 1.3rem;
+          }
+          .stat-label {
+            font-size: 0.65rem;
+            line-height: 1.2;
+          }
           .notice-board-card {
-            padding: 1.25rem 1rem;
+            padding: 1.15rem 1rem;
           }
           .notice-board-title {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
           }
           .notice-actions-row {
             flex-direction: column;
@@ -1026,8 +1076,32 @@ export default function HomePage() {
             width: 100%;
             justify-content: center;
           }
+          .section-head {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+          .section-title {
+            font-size: 1.4rem;
+          }
           .news-cards-grid {
             grid-template-columns: 1fr;
+          }
+          .bells-tabs {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            padding-bottom: 0.4rem;
+            -webkit-overflow-scrolling: touch;
+          }
+          .bells-tab-btn {
+            white-space: nowrap;
+          }
+          .bells-table-card {
+            padding: 1rem;
+          }
+          .partners-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
           }
         }
       `}</style>

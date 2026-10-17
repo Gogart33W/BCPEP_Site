@@ -11,14 +11,13 @@ export default function SiteFooter() {
           <div className="footer-col-main">
             <Link to="/" className="footer-brand">
               <img 
-                src="/uploads/2025/09/berdychivskyj-fahovyj-koledzh-promyslovosti-ekonomiky-ta-prava-2.png" 
-                alt="БФКПЕП Логотип"
+                src="/college-emblem.png" 
+                alt="Офіційний герб БФКПЕП"
                 className="footer-logo"
-                onError={(e) => { e.target.src = '/logo.svg'; }}
               />
               <div className="footer-brand-text">
-                <span className="footer-title">ВСП «БФКПЕП»</span>
-                <span className="footer-subtitle">Бердичівський коледж промисловості, економіки та права</span>
+                <span className="footer-title">БФКПЕП</span>
+                <span className="footer-subtitle">Бердичівський фаховий коледж промисловості, економіки та права</span>
               </div>
             </Link>
 

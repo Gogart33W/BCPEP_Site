@@ -114,17 +114,16 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
       {/* Основна навігаційна панель */}
       <div className="main-nav-bar">
         <div className="container nav-container">
-          {/* Бренд коледжу */}
+          {/* Бренд коледжу з офіційним гербом */}
           <Link to="/" className="nav-brand">
             <img 
-              src="/uploads/2025/09/berdychivskyj-fahovyj-koledzh-promyslovosti-ekonomiky-ta-prava-2.png" 
-              alt="БФКПЕП Логотип"
+              src="/college-emblem.png" 
+              alt="Офіційний герб БФКПЕП"
               className="brand-logo"
-              onError={(e) => { e.target.src = '/logo.svg'; }}
             />
             <div className="brand-text">
-              <span className="brand-acronym">ВСП «БФКПЕП»</span>
-              <span className="brand-title">Бердичівський коледж промисловості, економіки та права</span>
+              <span className="brand-acronym">БФКПЕП</span>
+              <span className="brand-title">Бердичівський фаховий коледж промисловості, економіки та права</span>
             </div>
           </Link>
 
@@ -870,7 +869,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           padding: 0.25rem 0.5rem;
         }
 
-        /* Адаптивність під мобільні/планшети */
+        /* Адаптивність під мобільні та планшети */
         @media (max-width: 1160px) {
           .desktop-nav {
             display: none;
@@ -878,24 +877,77 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           .burger-toggle {
             display: inline-flex;
           }
-          .search-hotkey {
-            display: none;
-          }
-          .search-trigger {
-            width: 38px;
-            padding: 0;
-          }
         }
 
         @media (max-width: 768px) {
-          .top-bar-right {
+          .top-bar {
+            display: none; /* Приховуємо важку верхню планку на смартфонах */
+          }
+
+          .main-nav-bar {
+            padding: 0.5rem 0;
+          }
+
+          .nav-container {
+            gap: 0.75rem;
+          }
+
+          .brand-logo {
+            width: 38px;
+            height: 38px;
+          }
+
+          .brand-acronym {
+            font-size: 1.05rem;
+          }
+
+          .brand-title {
+            display: block;
+            font-size: 0.675rem;
+            max-width: 170px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .header-search-pill {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            justify-content: center;
+            border-radius: var(--radius-full);
+          }
+
+          .header-search-pill .search-text {
             display: none;
           }
+
+          .nav-tools {
+            gap: 0.4rem;
+          }
+
+          .mobile-drawer {
+            position: fixed;
+            top: 55px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            max-height: calc(100vh - 55px);
+            z-index: 1200;
+            padding: 1rem 0 3rem;
+            background: var(--bg-surface);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+          }
+        }
+
+        @media (max-width: 420px) {
           .brand-title {
             display: none;
           }
-          .address-item {
-            display: none;
+          .brand-acronym {
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
           }
         }
       `}</style>

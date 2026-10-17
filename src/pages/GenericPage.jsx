@@ -503,6 +503,44 @@ export default function GenericPage() {
           color: var(--text-muted, #64748b);
           font-size: 0.9rem;
         }
+
+        /* Адаптивність внутрішніх сторінок під мобільні */
+        @media (max-width: 768px) {
+          .generic-page {
+            padding: 1.25rem 1rem 3rem;
+          }
+          .page-title {
+            font-size: 1.6rem;
+            line-height: 1.25;
+          }
+          .news-meta-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+          .page-content table {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 1.25rem 0;
+          }
+          .docs-card-grid {
+            grid-template-columns: 1fr;
+          }
+          .doc-item-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+          }
+          .doc-actions {
+            width: 100%;
+          }
+          .doc-actions .btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
       `}</style>
     </article>
   );
