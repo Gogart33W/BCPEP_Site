@@ -556,10 +556,17 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
         }
 
         .nav-container {
+          max-width: 1680px;
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 1.5rem;
+        }
+
+        @media (max-width: 1760px) {
+          .brand-title {
+            display: none;
+          }
         }
 
         /* Бренд */
@@ -1099,15 +1106,6 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
             font-size: 1.1rem;
           }
 
-          .brand-title {
-            display: block;
-            font-size: 0.675rem;
-            max-width: 170px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-
           .header-search-pill {
             width: 38px;
             height: 38px;
@@ -1143,9 +1141,6 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
         }
 
         @media (max-width: 420px) {
-          .brand-title {
-            display: none;
-          }
           .brand-acronym {
             font-size: 1.15rem;
             letter-spacing: -0.02em;

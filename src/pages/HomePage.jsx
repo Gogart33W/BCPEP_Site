@@ -187,7 +187,7 @@ export default function HomePage() {
               <div className="video-player-box">
                 <video 
                   controls 
-                  poster="/uploads/2023/04/4.jpg"
+                  poster="/images/home/video-poster.jpg"
                   preload="metadata"
                 >
                   <source src="/uploads/2023/04/virtualna-ekskursiya-po-berdychivskomu-fahovomu-koledzhi-promyslovosti-ekonomiky-ta-prava.mp4" type="video/mp4" />
@@ -202,7 +202,11 @@ export default function HomePage() {
             {/* Плитки-посилання */}
             <div className="quick-tiles-col">
               <Link to="/pro-koledzh/istoriya-koledzhu" className="promo-tile">
-                <img src="/uploads/2022/11/56567548o.png" alt="Історія коледжу" />
+                <img 
+                  src="/images/home/history.png" 
+                  alt="" 
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
                 <div className="promo-tile-overlay">
                   <h4>Історія коледжу</h4>
                   <span>Дізнатися більше про традиції з 1903 року →</span>
@@ -210,7 +214,11 @@ export default function HomePage() {
               </Link>
 
               <Link to="/pamyatayemo-zagyblyh-u-vijni" className="promo-tile memorial">
-                <img src="/uploads/2024/09/untitled.png" alt="Пам'ятаємо загиблих у війні" />
+                <img 
+                  src="/images/home/memorial.png" 
+                  alt="" 
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
                 <div className="promo-tile-overlay">
                   <h4>Пам'ятаємо загиблих у війні</h4>
                   <span>Герої нашого коледжу, які віддали життя за Україну →</span>
@@ -314,27 +322,51 @@ export default function HomePage() {
           
           <div className="partners-grid">
             <a href="https://www.knuba.edu.ua/" target="_blank" rel="noreferrer" className="partner-item">
-              <img src="/uploads/2022/10/knuba.png" alt="КНУБА" />
+              <img 
+                src="/images/partners/knuba.png" 
+                alt="" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <span>КНУБА</span>
             </a>
             <a href="https://kymu.edu.ua/" target="_blank" rel="noreferrer" className="partner-item">
-              <img src="/uploads/2022/10/kymu.png" alt="КиМУ" />
+              <img 
+                src="/images/partners/kymu.png" 
+                alt="" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <span>КиМУ</span>
             </a>
             <a href="https://op.edu.ua/" target="_blank" rel="noreferrer" className="partner-item">
-              <img src="/uploads/2022/10/op.png" alt="Одеська політехніка" />
+              <img 
+                src="/images/partners/op.png" 
+                alt="" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <span>Одеська політехніка</span>
             </a>
             <a href="https://nuft.edu.ua/" target="_blank" rel="noreferrer" className="partner-item">
-              <img src="/uploads/2022/10/nuft.png" alt="НУХТ" />
+              <img 
+                src="/images/partners/nuft.png" 
+                alt="" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <span>НУХТ</span>
             </a>
             <a href="https://ztu.edu.ua/" target="_blank" rel="noreferrer" className="partner-item">
-              <img src="/uploads/2022/10/ztu.png" alt="Житомирська політехніка" />
+              <img 
+                src="/images/partners/ztu.png" 
+                alt="" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <span>Житомирська політехніка</span>
             </a>
             <a href="https://zu.edu.ua/" target="_blank" rel="noreferrer" className="partner-item">
-              <img src="/uploads/2022/10/zu.png" alt="ЖДУ ім. Івана Франка" />
+              <img 
+                src="/images/partners/zu.png" 
+                alt="" 
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
               <span>ЖДУ ім. Івана Франка</span>
             </a>
           </div>

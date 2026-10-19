@@ -238,6 +238,56 @@ const COLLEGE_STRUCTURE = {
   ]
 };
 
+// Рекурсивна фільтрація структури за пошуковим запитом
+function filterStructureNode(node, q) {
+  if (!q) return { node, matchCount: 0 };
+  
+  const query = q.toLowerCase().trim();
+  const titleMatches = node.title?.toLowerCase().includes(query);
+  const subtitleMatches = node.subtitle?.toLowerCase().includes(query);
+  const isSelfMatch = Boolean(titleMatches || subtitleMatches);
+
+  let filteredChildren = [];
+  let childMatchCount = 0;
+
+  if (node.children && node.children.length > 0) {
+    for (const child of node.children) {
+      const childRes = filterStructureNode(child, query);
+      if (childRes.node) {
+        filteredChildren.push(childRes.node);
+        childMatchCount += childRes.matchCount;
+      }
+    }
+  }
+
+  const hasMatchedDescendants = filteredChildren.length > 0;
+  const matchCount = (isSelfMatch ? 1 : 0) + childMatchCount;
+
+  if (isSelfMatch || hasMatchedDescendants) {
+    return {
+      node: {
+        ...node,
+        children: hasMatchedDescendants ? filteredChildren : (node.children || [])
+      },
+      matchCount
+    };
+  }
+
+  return { node: null, matchCount: 0 };
+}
+
+function highlightMatch(text, query) {
+  if (!text || !query || !query.trim()) return text;
+  const q = query.trim();
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  const parts = String(text).split(regex);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    regex.test(part) ? <mark key={i} className="search-highlight">{part}</mark> : part
+  );
+}
+
 export default function StructurePage() {
   const [viewMode, setViewMode] = useState('tree'); // 'tree' | 'accordion'
   const [searchQuery, setSearchQuery] = useState('');
@@ -249,6 +299,26 @@ export default function StructurePage() {
     'deputy-admin': true,
     'direct-services': true
   });
+
+  const filteredResult = React.useMemo(() => {
+    return filterStructureNode(COLLEGE_STRUCTURE, searchQuery);
+  }, [searchQuery]);
+
+  const currentStructure = filteredResult.node;
+
+  // Автоматично розгортаємо всі знайдені гілки при введенні пошукового запиту
+  React.useEffect(() => {
+    if (searchQuery.trim() && currentStructure) {
+      const allMatching = {};
+      const collect = (node) => {
+        if (!node) return;
+        allMatching[node.id] = true;
+        if (node.children) node.children.forEach(collect);
+      };
+      collect(currentStructure);
+      setExpandedNodes(prev => ({ ...prev, ...allMatching }));
+    }
+  }, [searchQuery, currentStructure]);
 
   const toggleNode = (id) => {
     setExpandedNodes(prev => ({
@@ -299,12 +369,19 @@ export default function StructurePage() {
             <Search size={16} className="search-icon" />
             <input 
               type="text" 
-              placeholder="Пошук посади чи підрозділу (напр. бухгалтер, майстер, заступник)..."
+              placeholder="Пошук посади чи підрозділу (напр. директор, бухгалтер, майстерня)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
-              <button className="clear-btn" onClick={() => setSearchQuery('')}>×</button>
+              <button className="clear-btn" onClick={() => setSearchQuery('')} title="Очистити пошук">×</button>
+            )}
+            {searchQuery.trim() && (
+              <span className="search-count-badge">
+                {filteredResult.matchCount > 0 
+                  ? `Знайдено збігів: ${filteredResult.matchCount}` 
+                  : '0 збігів'}
+              </span>
             )}
           </div>
 
@@ -340,8 +417,18 @@ export default function StructurePage() {
         </div>
       </header>
 
-      {/* ВІДОБРАЖЕННЯ 1: ІЄРАРХІЧНЕ ДЕРЕВО (SCHEMA VIEW) */}
-      {viewMode === 'tree' ? (
+      {/* Якщо нічого не знайдено за пошуковим запитом */}
+      {!currentStructure ? (
+        <div className="search-empty-state">
+          <Building2 size={44} className="empty-icon" />
+          <h3>За запитом «{searchQuery}» підрозділів або посад не знайдено</h3>
+          <p>Перевірте правильність написання або спробуйте іншу назву (наприклад: директор, бухгалтер, майстерня, гуртожиток)</p>
+          <button className="btn btn-primary btn-sm" onClick={() => setSearchQuery('')}>
+            Скинути пошук
+          </button>
+        </div>
+      ) : viewMode === 'tree' ? (
+        /* ВІДОБРАЖЕННЯ 1: ІЄРАРХІЧНЕ ДЕРЕВО (SCHEMA VIEW) */
         <div className="structure-tree-view">
           {/* Вершина: Директор */}
           <div className="tree-root-box">
@@ -351,108 +438,112 @@ export default function StructurePage() {
               </div>
               <div className="node-text">
                 <span className="node-level-tag">Вищий орган управління</span>
-                <h2 className="node-title">{COLLEGE_STRUCTURE.title}</h2>
-                <p className="node-desc">{COLLEGE_STRUCTURE.subtitle}</p>
+                <h2 className="node-title">{highlightMatch(currentStructure.title, searchQuery)}</h2>
+                <p className="node-desc">{highlightMatch(currentStructure.subtitle, searchQuery)}</p>
               </div>
             </div>
-            <div className="tree-trunk-line"></div>
+            {currentStructure.children && currentStructure.children.length > 0 && (
+              <div className="tree-trunk-line"></div>
+            )}
           </div>
 
           {/* Другий рівень: Заступники та служби */}
-          <div className="tree-branches-grid">
-            {COLLEGE_STRUCTURE.children.map((branch) => {
-              const isExpanded = expandedNodes[branch.id];
-              const BranchIcon = branch.icon || Users;
+          {currentStructure.children && currentStructure.children.length > 0 && (
+            <div className="tree-branches-grid">
+              {currentStructure.children.map((branch) => {
+                const isExpanded = expandedNodes[branch.id];
+                const BranchIcon = branch.icon || Users;
 
-              return (
-                <div key={branch.id} className="tree-branch-col">
-                  {/* Головний вузол заступника */}
-                  <div 
-                    className={`node-card node-deputy ${isExpanded ? 'expanded' : ''}`}
-                    onClick={() => toggleNode(branch.id)}
-                    style={{ '--branch-color': branch.color }}
-                  >
-                    <div className="node-head">
-                      <div className="branch-icon" style={{ background: `${branch.color}15`, color: branch.color }}>
-                        <BranchIcon size={18} />
+                return (
+                  <div key={branch.id} className="tree-branch-col">
+                    {/* Головний вузол заступника */}
+                    <div 
+                      className={`node-card node-deputy ${isExpanded ? 'expanded' : ''}`}
+                      onClick={() => toggleNode(branch.id)}
+                      style={{ '--branch-color': branch.color }}
+                    >
+                      <div className="node-head">
+                        <div className="branch-icon" style={{ background: `${branch.color}15`, color: branch.color }}>
+                          <BranchIcon size={18} />
+                        </div>
+                        <ChevronDown size={16} className={`toggle-arrow ${isExpanded ? 'rotated' : ''}`} />
                       </div>
-                      <ChevronDown size={16} className={`toggle-arrow ${isExpanded ? 'rotated' : ''}`} />
+
+                      <h3 className="node-title branch-title">{highlightMatch(branch.title, searchQuery)}</h3>
+                      <p className="node-desc branch-desc">{highlightMatch(branch.subtitle, searchQuery)}</p>
+
+                      <div className="node-footer">
+                        <span className="units-count">
+                          {branch.children?.length || 0} підрозділів
+                        </span>
+                      </div>
                     </div>
 
-                    <h3 className="node-title branch-title">{branch.title}</h3>
-                    <p className="node-desc branch-desc">{branch.subtitle}</p>
+                    {/* Дочірні підрозділи */}
+                    {isExpanded && branch.children && branch.children.length > 0 && (
+                      <div className="branch-children-list">
+                        <div className="branch-connector-line" style={{ background: branch.color }}></div>
 
-                    <div className="node-footer">
-                      <span className="units-count">
-                        {branch.children.length} основних підрозділи
-                      </span>
-                    </div>
-                  </div>
+                        {branch.children.map((dept) => {
+                          const isDeptExpanded = expandedNodes[dept.id] ?? true;
+                          const hasSub = dept.children && dept.children.length > 0;
 
-                  {/* Дочірні підрозділи */}
-                  {isExpanded && (
-                    <div className="branch-children-list">
-                      <div className="branch-connector-line" style={{ background: branch.color }}></div>
-
-                      {branch.children.map((dept) => {
-                        const isDeptExpanded = expandedNodes[dept.id] ?? true;
-                        const hasSub = dept.children && dept.children.length > 0;
-
-                        return (
-                          <div key={dept.id} className="dept-node-box">
-                            <div 
-                              className={`dept-card ${hasSub ? 'clickable' : ''}`}
-                              onClick={() => hasSub && toggleNode(dept.id)}
-                            >
-                              <div className="dept-card-header">
-                                <h4 className="dept-title">{dept.title}</h4>
-                                {hasSub && (
-                                  <ChevronDown size={14} className={`dept-arrow ${isDeptExpanded ? 'rotated' : ''}`} />
-                                )}
+                          return (
+                            <div key={dept.id} className="dept-node-box">
+                              <div 
+                                className={`dept-card ${hasSub ? 'clickable' : ''}`}
+                                onClick={() => hasSub && toggleNode(dept.id)}
+                              >
+                                <div className="dept-card-header">
+                                  <h4 className="dept-title">{highlightMatch(dept.title, searchQuery)}</h4>
+                                  {hasSub && (
+                                    <ChevronDown size={14} className={`dept-arrow ${isDeptExpanded ? 'rotated' : ''}`} />
+                                  )}
+                                </div>
+                                {dept.subtitle && <p className="dept-desc">{highlightMatch(dept.subtitle, searchQuery)}</p>}
                               </div>
-                              {dept.subtitle && <p className="dept-desc">{dept.subtitle}</p>}
-                            </div>
 
-                            {/* Фахівці та ланки нижчого рівня */}
-                            {hasSub && isDeptExpanded && (
-                              <div className="positions-list">
-                                {dept.children.map((pos) => {
-                                  const hasNested = pos.children && pos.children.length > 0;
-                                  return (
-                                    <div key={pos.id} className="pos-item-box">
-                                      <div className="pos-item">
-                                        <span className="pos-dot"></span>
-                                        <span className="pos-text">{pos.title}</span>
-                                      </div>
-                                      {hasNested && (
-                                        <div className="nested-pos-list">
-                                          {pos.children.map((nested) => (
-                                            <div key={nested.id} className="nested-pos-item">
-                                              <span className="nested-arrow">↳</span>
-                                              <span>{nested.title}</span>
-                                            </div>
-                                          ))}
+                              {/* Фахівці та ланки нижчого рівня */}
+                              {hasSub && isDeptExpanded && (
+                                <div className="positions-list">
+                                  {dept.children.map((pos) => {
+                                    const hasNested = pos.children && pos.children.length > 0;
+                                    return (
+                                      <div key={pos.id} className="pos-item-box">
+                                        <div className="pos-item">
+                                          <span className="pos-dot"></span>
+                                          <span className="pos-text">{highlightMatch(pos.title, searchQuery)}</span>
                                         </div>
-                                      )}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                                        {hasNested && (
+                                          <div className="nested-pos-list">
+                                            {pos.children.map((nested) => (
+                                              <div key={nested.id} className="nested-pos-item">
+                                                <span className="nested-arrow">↳</span>
+                                                <span>{highlightMatch(nested.title, searchQuery)}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : (
         /* ВІДОБРАЖЕННЯ 2: КАРТКИ ПІДРОЗДІЛІВ (ACCORDION VIEW) */
         <div className="structure-accordion-view">
-          {COLLEGE_STRUCTURE.children.map((deputy) => {
+          {currentStructure.children?.map((deputy) => {
             const DeputyIcon = deputy.icon || Users;
 
             return (
@@ -463,19 +554,19 @@ export default function StructurePage() {
                       <DeputyIcon size={22} />
                     </div>
                     <div>
-                      <h2 className="deputy-head-title">{deputy.title}</h2>
-                      <p className="deputy-head-desc">{deputy.subtitle}</p>
+                      <h2 className="deputy-head-title">{highlightMatch(deputy.title, searchQuery)}</h2>
+                      <p className="deputy-head-desc">{highlightMatch(deputy.subtitle, searchQuery)}</p>
                     </div>
                   </div>
                 </div>
 
                 <div className="dept-cards-grid">
-                  {deputy.children.map((dept) => (
+                  {deputy.children?.map((dept) => (
                     <article key={dept.id} className="dept-full-card">
                       <div className="card-top">
                         <span className="card-tag">Підрозділ коледжу</span>
-                        <h3 className="card-title">{dept.title}</h3>
-                        {dept.subtitle && <p className="card-desc">{dept.subtitle}</p>}
+                        <h3 className="card-title">{highlightMatch(dept.title, searchQuery)}</h3>
+                        {dept.subtitle && <p className="card-desc">{highlightMatch(dept.subtitle, searchQuery)}</p>}
                       </div>
 
                       {dept.children && dept.children.length > 0 && (
@@ -484,11 +575,11 @@ export default function StructurePage() {
                           <ul className="positions-ul">
                             {dept.children.map((pos) => (
                               <li key={pos.id}>
-                                <strong>{pos.title}</strong>
+                                <strong>{highlightMatch(pos.title, searchQuery)}</strong>
                                 {pos.children && (
                                   <ul className="sub-positions-ul">
                                     {pos.children.map((sub) => (
-                                      <li key={sub.id}>{sub.title}</li>
+                                      <li key={sub.id}>{highlightMatch(sub.title, searchQuery)}</li>
                                     ))}
                                   </ul>
                                 )}
@@ -672,6 +763,66 @@ export default function StructurePage() {
           color: var(--text-muted);
           font-size: 1.1rem;
           cursor: pointer;
+        }
+
+        .search-count-badge {
+          position: absolute;
+          right: 2rem;
+          top: 50%;
+          transform: translateY(-50%);
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: var(--primary);
+          background: var(--primary-subtle);
+          padding: 0.15rem 0.5rem;
+          border-radius: var(--radius-full);
+          pointer-events: none;
+        }
+
+        .search-highlight {
+          background: rgba(245, 158, 11, 0.35);
+          color: inherit;
+          padding: 0.05em 0.25em;
+          border-radius: 3px;
+          border-bottom: 2px solid #d97706;
+          font-weight: 700;
+        }
+
+        [data-theme='dark'] .search-highlight {
+          background: rgba(245, 158, 11, 0.3);
+          border-bottom-color: #fbbf24;
+          color: #fbbf24;
+        }
+
+        .search-empty-state {
+          text-align: center;
+          padding: 4.5rem 1.5rem;
+          background: var(--bg-surface);
+          border: 2px dashed var(--border-color);
+          border-radius: var(--radius-lg);
+          margin-top: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .search-empty-state .empty-icon {
+          color: var(--text-muted);
+          opacity: 0.7;
+        }
+
+        .search-empty-state h3 {
+          font-size: 1.3rem;
+          color: var(--text-main);
+          margin-top: 0.5rem;
+        }
+
+        .search-empty-state p {
+          color: var(--text-muted);
+          font-size: 0.95rem;
+          max-width: 500px;
+          margin-bottom: 0.75rem;
         }
 
         .toolbar-actions {
