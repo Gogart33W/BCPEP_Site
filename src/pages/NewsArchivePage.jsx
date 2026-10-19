@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Clock, Search, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { fetchNews, fetchNewsCategories } from '../api/client';
 import NewsCardCover from '../components/NewsCardCover';
+import NewsMasonryGrid from '../components/NewsMasonryGrid';
 
 export default function NewsArchivePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -104,8 +105,9 @@ export default function NewsArchivePage() {
         </div>
       ) : (
         <>
-          <div className="news-grid">
-            {newsRes.items.map(post => (
+          <NewsMasonryGrid
+            items={newsRes.items}
+            renderItem={(post) => (
               <article key={post.slug} className="news-card">
                 <Link to={`/${post.slug}`} className="news-img-box-link">
                   <NewsCardCover
@@ -125,8 +127,8 @@ export default function NewsArchivePage() {
                   </h3>
                 </div>
               </article>
-            ))}
-          </div>
+            )}
+          />
 
           {/* Пагінація 1..N */}
           {newsRes.pages > 1 && (

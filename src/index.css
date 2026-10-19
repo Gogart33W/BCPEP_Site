@@ -394,11 +394,10 @@ input, select, textarea {
   }
 }
 
-/* Обкладинки новин (надійні для Render та локального режиму) */
+/* Обкладинки новин (без обрізання, збереження природних пропорцій горизонтальних фото та вертикальних грамот) */
 .news-cover-wrap {
   position: relative;
   width: 100%;
-  height: 200px;
   background: var(--bg-surface-elevated, #1e293b);
   overflow: hidden;
   display: block;
@@ -406,7 +405,7 @@ input, select, textarea {
 
 .news-cover-fallback {
   width: 100%;
-  height: 100%;
+  height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -442,14 +441,14 @@ input, select, textarea {
 
 .news-cover-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
+  object-fit: contain;
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .news-card:hover .news-cover-img {
-  transform: scale(1.04);
+  transform: scale(1.03);
 }
 
 .news-card:hover .fallback-emblem-img {
@@ -471,6 +470,24 @@ input, select, textarea {
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
+
+/* Masonry сітка новин (як у WordPress/Divi) */
+.news-masonry-grid {
+  display: flex;
+  gap: 1.75rem;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 2.5rem;
+}
+
+.news-masonry-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
 
 /* Відео-плеєри (16:9 адаптивні) */
 .video-embed-box {

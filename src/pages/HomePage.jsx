@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { fetchHome, fetchNews, fetchNotice } from '../api/client';
 import NewsCardCover from '../components/NewsCardCover';
+import NewsMasonryGrid from '../components/NewsMasonryGrid';
 
 export default function HomePage() {
   const [homeData, setHomeData] = useState(null);
@@ -137,8 +138,9 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="news-cards-grid">
-            {latestNews.map((post) => (
+          <NewsMasonryGrid
+            items={latestNews}
+            renderItem={(post) => (
               <article key={post.slug} className="news-card">
                 <Link to={`/${post.slug}`} className="news-card-image-link">
                   <NewsCardCover
@@ -158,8 +160,8 @@ export default function HomePage() {
                   </h3>
                 </div>
               </article>
-            ))}
-          </div>
+            )}
+          />
         </div>
       </section>
 
