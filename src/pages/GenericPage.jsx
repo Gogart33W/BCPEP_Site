@@ -46,7 +46,7 @@ export default function GenericPage() {
     }
   };
 
-  // Очищення дублікату обкладинки новини на початку тексту та трансформація відео
+  // Трансформація медіа (YouTube-вбудови для спеціальностей, очищення битих локальних тегів video)
   const cleanedContent = React.useMemo(() => {
     if (!data?.content) return '';
     let html = data.content;
@@ -71,17 +71,8 @@ export default function GenericPage() {
     // Якщо залишились биті локальні <video src="/uploads/..."> без джерела на сервері, приховуємо їх, щоб браузер не виводив помилку MIME
     html = html.replace(/<video[^>]*controls[^>]*>\s*(?:<source[^>]*src=["']\/uploads\/[^"']+["'][^>]*>)?\s*<\/video>/gi, '');
 
-    if (type === 'news' && data.image) {
-      const imgFilename = data.image.split('/').pop().replace(/-\d+x\d+(\.\w+)$/, '$1');
-      html = html.replace(/^\s*<(figure|p|div)[^>]*>\s*<img[^>]+src=["'][^"']*?([^"'/]+\.\w+)["'][^>]*>\s*<\/\1>/i, (match, tag, srcFile) => {
-        if (data.image.includes(srcFile) || srcFile.includes(imgFilename.slice(0, 15))) {
-          return '';
-        }
-        return match;
-      });
-    }
     return html;
-  }, [data?.content, data?.image, type]);
+  }, [data?.content]);
 
   // Пошук чи є поточна сторінка батьківською категорією в menu.json
   const matchedCategory = React.useMemo(() => {
@@ -99,6 +90,18 @@ export default function GenericPage() {
     };
     return searchTree(menuData);
   }, [slug]);
+
+  // Перевірка чи в контенті новини вже є власні ілюстрації від автора (щоб не дублювати заставку)
+  const hasContentImages = React.useMemo(() => {
+    return Boolean(cleanedContent && /<img[^>]+src=/i.test(cleanedContent));
+  }, [cleanedContent]);
+
+  // Приховування битих зображень без ламання верстки
+  const handleContentError = (e) => {
+    if (e.target && e.target.tagName === 'IMG') {
+      e.target.style.display = 'none';
+    }
+  };
 
   const textLength = (cleanedContent || '').replace(/<[^>]+>/g, '').trim().length;
   const isShortContent = textLength < 120;
@@ -175,13 +178,19 @@ export default function GenericPage() {
         )}
       </header>
 
-      {/* Обкладинка новини (єдина, без дублювання в тілі новини) */}
-      {type === 'news' && data.image && (
-        <div className="news-featured-image-box">
+      {/* Обкладинка новини (тільки якщо в самому тексті немає ілюстрацій автора — без обрізання та без дублювання) */}
+      {type === 'news' && data.image && !hasContentImages && (
+        <div className="news-fallback-hero-box">
           <img 
-            src={data.image} 
+            src={data.image.replace(/-\d+x\d+(\.\w+)$/, '$1')} 
             alt={data.title} 
-            onError={e => { e.currentTarget.parentElement.style.display = 'none'; }} 
+            onError={e => { 
+              if (e.currentTarget.src !== data.image) {
+                e.currentTarget.src = data.image;
+              } else {
+                e.currentTarget.parentElement.style.display = 'none'; 
+              }
+            }} 
           />
         </div>
       )}
@@ -226,6 +235,7 @@ export default function GenericPage() {
           className="page-html-content"
           dangerouslySetInnerHTML={{ __html: cleanedContent }}
           onClick={handleContentClick}
+          onErrorCapture={handleContentError}
         />
       )}
 
@@ -458,17 +468,24 @@ export default function GenericPage() {
           font-weight: 600;
         }
 
-        .news-featured-image-box {
-          border-radius: 12px;
+        .news-fallback-hero-box {
+          border-radius: var(--radius-lg, 14px);
           overflow: hidden;
-          margin-bottom: 2rem;
-          background: var(--bg-surface-elevated, #1e293b);
+          margin: 1.5rem auto 2.5rem;
+          max-width: 920px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: var(--bg-surface);
+          border: 1px solid var(--border-color);
+          box-shadow: var(--shadow-sm);
         }
 
-        .news-featured-image-box img {
-          width: 100%;
-          max-height: 480px;
-          object-fit: cover;
+        .news-fallback-hero-box img {
+          max-width: 100%;
+          height: auto;
+          max-height: 85vh;
+          object-fit: contain;
           display: block;
         }
 
@@ -528,12 +545,68 @@ export default function GenericPage() {
           color: #1d4ed8;
         }
 
+        .page-html-content figure {
+          margin: 1.75rem auto;
+          max-width: 100%;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .page-html-content figcaption {
+          margin-top: 0.5rem;
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          text-align: center;
+        }
+
         .page-html-content img {
           max-width: 100%;
           height: auto;
-          border-radius: 8px;
-          margin: 1.25rem 0;
+          object-fit: contain;
+          border-radius: var(--radius-md, 10px);
+          margin: 1.5rem auto;
           display: block;
+          box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.12);
+          border: 1px solid var(--border-color);
+        }
+
+        .page-html-content .wp-block-image {
+          margin: 1.75rem auto;
+          text-align: center;
+        }
+
+        .page-html-content .wp-block-image img {
+          display: inline-block;
+          margin: 0 auto;
+        }
+
+        .page-html-content .aligncenter {
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          text-align: center;
+        }
+
+        .page-html-content .alignleft {
+          float: left;
+          margin: 0.5rem 1.5rem 1rem 0;
+          max-width: 50%;
+        }
+
+        .page-html-content .alignright {
+          float: right;
+          margin: 0.5rem 0 1rem 1.5rem;
+          max-width: 50%;
+        }
+
+        @media (max-width: 768px) {
+          .page-html-content .alignleft,
+          .page-html-content .alignright {
+            float: none;
+            margin: 1.25rem auto;
+            max-width: 100%;
+          }
         }
 
         .page-html-content video {
