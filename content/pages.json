@@ -2457,7 +2457,7 @@
   {
     "slug": "virtualna-ekskursiya",
     "title": "Віртуальна екскурсія",
-    "content": "<div><video poster=\"/uploads/2023/04/4.jpg\" controls=\"\" preload=\"metadata\"><source src=\"/uploads/2023/04/virtualna-ekskursiya-po-berdychivskomu-fahovomu-koledzhi-promyslovosti-ekonomiky-ta-prava.mp4\" type=\"video/mp4\"></video></div>",
+    "content": "<div><div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.15);\"><iframe src=\"https://www.youtube-nocookie.com/embed/qOUu4D8Od7Q\" title=\"Віртуальна екскурсія коледжем\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0;\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen=\"\"></iframe></div></div>",
     "documents": []
   },
   {

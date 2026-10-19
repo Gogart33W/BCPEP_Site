@@ -1,7 +1,8 @@
 {
   "video": {
-    "src": "/uploads/2023/04/virtualna-ekskursiya-po-berdychivskomu-fahovomu-koledzhi-promyslovosti-ekonomiky-ta-prava.mp4",
-    "poster": "/uploads/2023/04/4.jpg"
+    "youtubeId": "qOUu4D8Od7Q",
+    "src": "https://www.youtube-nocookie.com/embed/qOUu4D8Od7Q",
+    "poster": "/images/home/video-poster.jpg"
   },
   "tiles": [
     {

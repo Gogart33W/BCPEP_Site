@@ -38,6 +38,56 @@ if (!db.prepare('SELECT 1 FROM admins LIMIT 1').get()) {
   console.log(`Створено адміністратора ${email}. Змініть пароль через ADMIN_PASSWORD.`);
 }
 
+// Автоматичне наповнення бази даних контентом, якщо вона порожня (наприклад, після нового деплою на Render)
+try {
+  const pagesCount = db.prepare('SELECT COUNT(*) AS c FROM pages').get()?.c || 0;
+  if (pagesCount === 0) {
+    console.log('Порожня база даних. Виконується автоматичний імпорт з content/*.json...');
+    const dir = path.resolve('content');
+    if (fs.existsSync(dir)) {
+      const read = (name) => {
+        const file = path.join(dir, name);
+        return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null;
+      };
+
+      const menu = read('menu.json');
+      const pages = read('pages.json');
+      const news = read('news.json');
+      const home = read('home.json');
+
+      if (menu) setSetting('menu', menu);
+      if (home) setSetting('home', home);
+
+      const insertPage = db.prepare('INSERT OR IGNORE INTO pages (slug, title, content, documents) VALUES (?, ?, ?, ?)');
+      const insertNews = db.prepare('INSERT OR IGNORE INTO news (slug, title, content, image, categories, documents, date) VALUES (?, ?, ?, ?, ?, ?, ?)');
+
+      db.exec('BEGIN');
+      if (pages && Array.isArray(pages)) {
+        for (const p of pages) {
+          insertPage.run(p.slug, p.title, p.content || '', JSON.stringify(p.documents || []));
+        }
+      }
+      if (news && Array.isArray(news)) {
+        for (const n of news) {
+          insertNews.run(
+            n.slug,
+            n.title,
+            n.content || '',
+            n.image || null,
+            JSON.stringify(n.categories || []),
+            JSON.stringify(n.documents || []),
+            n.date || new Date().toISOString()
+          );
+        }
+      }
+      db.exec('COMMIT');
+      console.log(`Успішно імпортовано: ${pages?.length || 0} сторінок, ${news?.length || 0} новин.`);
+    }
+  }
+} catch (seedErr) {
+  console.error('Помилка при авто-імпорті контенту:', seedErr);
+}
+
 function requireAdmin(req, res, next) {
   const token = (req.headers.authorization || '').replace(/^Bearer /, '');
   const session = token && db.prepare("SELECT email FROM sessions WHERE token = ? AND expires_at > datetime('now')").get(token);

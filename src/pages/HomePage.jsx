@@ -185,14 +185,13 @@ export default function HomePage() {
                 <h3>Віртуальна екскурсія коледжем</h3>
               </div>
               <div className="video-player-box">
-                <video 
-                  controls 
-                  poster="/images/home/video-poster.jpg"
-                  preload="metadata"
-                >
-                  <source src="/uploads/2023/04/virtualna-ekskursiya-po-berdychivskomu-fahovomu-koledzhi-promyslovosti-ekonomiky-ta-prava.mp4" type="video/mp4" />
-                  Ваш браузер не підтримує відтворення відео.
-                </video>
+                <iframe 
+                  src="https://www.youtube-nocookie.com/embed/qOUu4D8Od7Q" 
+                  title="Віртуальна екскурсія по Бердичівському фаховому коледжу"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  allowFullScreen
+                />
               </div>
               <p className="video-desc">
                 Огляд навчального корпусу, аудиторій програмування, навчально-виробничих майстерень та студентського простору.
@@ -850,12 +849,15 @@ export default function HomePage() {
           overflow: hidden;
           background: #000;
           margin-bottom: 0.75rem;
+          aspect-ratio: 16 / 9;
         }
 
+        .video-player-box iframe,
         .video-player-box video {
           width: 100%;
+          height: 100%;
+          border: 0;
           display: block;
-          max-height: 340px;
         }
 
         .video-desc {
