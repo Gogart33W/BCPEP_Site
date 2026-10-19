@@ -5,6 +5,7 @@ import {
   ExternalLink, Bell, Shield, Award, Users 
 } from 'lucide-react';
 import { fetchHome, fetchNews, fetchNotice } from '../api/client';
+import NewsCardCover from '../components/NewsCardCover';
 
 export default function HomePage() {
   const [homeData, setHomeData] = useState(null);
@@ -139,24 +140,12 @@ export default function HomePage() {
           <div className="news-cards-grid">
             {latestNews.map((post) => (
               <article key={post.slug} className="news-card">
-                <Link to={`/${post.slug}`} className="news-card-image-wrap">
-                  {post.image ? (
-                    <img 
-                      src={post.image} 
-                      alt={post.title} 
-                      loading="lazy"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  ) : (
-                    <div className="news-image-placeholder">
-                      <BookOpen size={32} />
-                    </div>
-                  )}
-                  {post.categories && post.categories[0] && (
-                    <span className="news-card-category">{post.categories[0]}</span>
-                  )}
+                <Link to={`/${post.slug}`} className="news-card-image-link">
+                  <NewsCardCover
+                    src={post.image}
+                    alt={post.title}
+                    category={post.categories && post.categories[0]}
+                  />
                 </Link>
 
                 <div className="news-card-body">
@@ -742,44 +731,9 @@ export default function HomePage() {
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         }
 
-        .news-card-image-wrap {
-          position: relative;
-          height: 190px;
-          background: #f1f5f9;
+        .news-card-image-link {
           display: block;
-          overflow: hidden;
-        }
-
-        .news-card-image-wrap img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.3s;
-        }
-
-        .news-card:hover .news-card-image-wrap img {
-          transform: scale(1.04);
-        }
-
-        .news-image-placeholder {
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #94a3b8;
-        }
-
-        .news-card-category {
-          position: absolute;
-          bottom: 10px;
-          left: 10px;
-          background: rgba(15, 23, 42, 0.85);
-          color: #ffffff;
-          padding: 0.2rem 0.55rem;
-          border-radius: 4px;
-          font-size: 0.725rem;
-          font-weight: 600;
-          backdrop-filter: blur(4px);
+          text-decoration: none;
         }
 
         .news-card-body {

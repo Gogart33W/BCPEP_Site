@@ -46,10 +46,31 @@ export default function GenericPage() {
     }
   };
 
-  // Очищення дублікату обкладинки новини на початку тексту (ВИКЛИКАЄТЬСЯ ДО УМОВНИХ RETURN)
+  // Очищення дублікату обкладинки новини на початку тексту та трансформація відео
   const cleanedContent = React.useMemo(() => {
     if (!data?.content) return '';
     let html = data.content;
+
+    // Авто-конвертація локальних .mp4 спеціальностей на офіційні YouTube вбудови (@БФКПЕП)
+    html = html.replace(/<video[^>]*>[\s\S]*?prezentaczyya-specz\.-programuvannya[\s\S]*?<\/video>/gi, 
+      '<div class="video-embed-box"><iframe src="https://www.youtube-nocookie.com/embed/99EvLj4a8mA" title="Інженерія програмного забезпечення" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>'
+    );
+    html = html.replace(/<video[^>]*>[\s\S]*?ekonomika-prezentacziya[\s\S]*?<\/video>/gi, 
+      '<div class="video-embed-box"><iframe src="https://www.youtube-nocookie.com/embed/tgVYwdazTu0" title="Економіка та менеджмент" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>'
+    );
+    html = html.replace(/<video[^>]*>[\s\S]*?oblik-i-opodatkuvannya-finansy[\s\S]*?<\/video>/gi, 
+      '<div class="video-embed-box"><iframe src="https://www.youtube-nocookie.com/embed/mR5G1TfZU74" title="Фінанси та облік" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>'
+    );
+    html = html.replace(/<video[^>]*>[\s\S]*?(?:1|2)\.mp4[\s\S]*?<\/video>/gi, 
+      '<div class="video-embed-box"><iframe src="https://www.youtube-nocookie.com/embed/4_jGq1puXIQ" title="Машинобудування" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>'
+    );
+    html = html.replace(/<video[^>]*>[\s\S]*?rik-yakyj-zminyv-nas[\s\S]*?<\/video>/gi, 
+      '<div class="video-embed-box"><iframe src="https://www.youtube-nocookie.com/embed/cwmxENRrzmc" title="Рік який змінив нас назавжди" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>'
+    );
+
+    // Якщо залишились биті локальні <video src="/uploads/..."> без джерела на сервері, приховуємо їх, щоб браузер не виводив помилку MIME
+    html = html.replace(/<video[^>]*controls[^>]*>\s*(?:<source[^>]*src=["']\/uploads\/[^"']+["'][^>]*>)?\s*<\/video>/gi, '');
+
     if (type === 'news' && data.image) {
       const imgFilename = data.image.split('/').pop().replace(/-\d+x\d+(\.\w+)$/, '$1');
       html = html.replace(/^\s*<(figure|p|div)[^>]*>\s*<img[^>]+src=["'][^"']*?([^"'/]+\.\w+)["'][^>]*>\s*<\/\1>/i, (match, tag, srcFile) => {
@@ -157,7 +178,11 @@ export default function GenericPage() {
       {/* Обкладинка новини (єдина, без дублювання в тілі новини) */}
       {type === 'news' && data.image && (
         <div className="news-featured-image-box">
-          <img src={data.image} alt={data.title} />
+          <img 
+            src={data.image} 
+            alt={data.title} 
+            onError={e => { e.currentTarget.parentElement.style.display = 'none'; }} 
+          />
         </div>
       )}
 
@@ -437,7 +462,7 @@ export default function GenericPage() {
           border-radius: 12px;
           overflow: hidden;
           margin-bottom: 2rem;
-          background: #f1f5f9;
+          background: var(--bg-surface-elevated, #1e293b);
         }
 
         .news-featured-image-box img {
@@ -452,6 +477,18 @@ export default function GenericPage() {
           font-size: 1.05rem;
           line-height: 1.75;
           color: var(--text-main, #1e293b);
+        }
+
+        .page-html-content iframe {
+          width: 100%;
+          max-width: 860px;
+          aspect-ratio: 16 / 9;
+          height: auto;
+          border: none;
+          border-radius: 12px;
+          margin: 1.5rem 0;
+          display: block;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
         }
 
         .page-html-content p {

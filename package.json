@@ -9,7 +9,7 @@
     "server": "node server/index.js",
     "seed": "node server/seed.js",
     "extract": "node scripts/extract-site.mjs",
-    "build": "vite build",
+    "build": "vite build && node server/seed.js --force",
     "lint": "oxlint",
     "preview": "vite preview"
   },

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Clock, Search, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { fetchNews, fetchNewsCategories } from '../api/client';
+import NewsCardCover from '../components/NewsCardCover';
 
 export default function NewsArchivePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -106,20 +107,12 @@ export default function NewsArchivePage() {
           <div className="news-grid">
             {newsRes.items.map(post => (
               <article key={post.slug} className="news-card">
-                <Link to={`/${post.slug}`} className="news-img-box">
-                  {post.image ? (
-                    <img 
-                      src={post.image} 
-                      alt={post.title} 
-                      loading="lazy" 
-                      onError={e => { e.target.style.display = 'none'; }}
-                    />
-                  ) : (
-                    <div className="news-placeholder"><BookOpen size={32} /></div>
-                  )}
-                  {post.categories && post.categories[0] && (
-                    <span className="cat-tag">{post.categories[0]}</span>
-                  )}
+                <Link to={`/${post.slug}`} className="news-img-box-link">
+                  <NewsCardCover
+                    src={post.image}
+                    alt={post.title}
+                    category={post.categories && post.categories[0]}
+                  />
                 </Link>
 
                 <div className="news-content-box">
@@ -263,45 +256,9 @@ export default function NewsArchivePage() {
           transform: translateY(-3px);
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         }
-
-        .news-img-box {
-          position: relative;
-          height: 200px;
-          background: #f1f5f9;
+        .news-img-box-link {
           display: block;
-          overflow: hidden;
-        }
-
-        .news-img-box img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.3s;
-        }
-
-        .news-card:hover .news-img-box img {
-          transform: scale(1.04);
-        }
-
-        .news-placeholder {
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #94a3b8;
-        }
-
-        .cat-tag {
-          position: absolute;
-          bottom: 10px;
-          left: 10px;
-          background: rgba(15, 23, 42, 0.85);
-          color: #ffffff;
-          padding: 0.2rem 0.55rem;
-          border-radius: 4px;
-          font-size: 0.725rem;
-          font-weight: 600;
-          backdrop-filter: blur(4px);
+          text-decoration: none;
         }
 
         .news-content-box {
