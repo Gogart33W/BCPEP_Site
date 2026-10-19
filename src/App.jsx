@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import SiteHeader from './components/SiteHeader';
 import SiteFooter from './components/SiteFooter';
 import HomePage from './pages/HomePage';
@@ -82,6 +82,10 @@ export default function App() {
             <Route path="/pro-koledzh/struktura" element={<StructurePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/api-docs" element={<ApiDocsPage />} />
+            <Route path="/osvitnya-diyalnist/specialnosti" element={<Navigate to="/abituriyentu/speczialnosti" replace />} />
+            <Route path="/osvitnya-diyalnist/speczialnosti" element={<Navigate to="/abituriyentu/speczialnosti" replace />} />
+            <Route path="/specialnosti" element={<Navigate to="/abituriyentu/speczialnosti" replace />} />
+            <Route path="/speczialnosti" element={<Navigate to="/abituriyentu/speczialnosti" replace />} />
             <Route path="/*" element={<GenericPage />} />
           </Routes>
           </ErrorBoundary>

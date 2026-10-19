@@ -43,7 +43,7 @@ export default function HomePage() {
                 <Calendar size={16} />
                 <span>Розклад та заміни</span>
               </Link>
-              <Link to="/osvitnya-diyalnist/specialnosti" className="btn btn-hero-glass">
+              <Link to="/abituriyentu/speczialnosti" className="btn btn-hero-glass">
                 <Users size={16} />
                 <span>Спеціальності</span>
               </Link>

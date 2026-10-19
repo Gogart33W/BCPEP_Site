@@ -898,6 +898,17 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
         @keyframes mobileDrawerEnter {
           from {
             opacity: 0;
+            transform: translateY(-14px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes mobileContentFadeIn {
+          from {
+            opacity: 0;
             transform: translateY(-8px);
           }
           to {
@@ -910,10 +921,16 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
         .mobile-drawer {
           background: var(--bg-surface);
           border-top: 1px solid var(--border-color);
-          padding: 1.25rem 0 3rem;
-          box-shadow: var(--shadow-xl);
-          animation: mobileDrawerEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          padding: 1.25rem 0 3.5rem;
+          box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4);
+          animation: mobileDrawerEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           overscroll-behavior: contain;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .mobile-drawer-inner {
+          animation: mobileContentFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .mobile-quick-actions {
@@ -938,6 +955,11 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           font-weight: 700;
           text-decoration: none;
           box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+          transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .mobile-cta-btn:active {
+          transform: scale(0.97);
         }
 
         .mobile-search-btn {
@@ -953,6 +975,11 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           font-size: 0.875rem;
           font-weight: 700;
           cursor: pointer;
+          transition: transform 0.2s ease;
+        }
+
+        .mobile-search-btn:active {
+          transform: scale(0.97);
         }
 
         .mobile-nav-tree {
@@ -984,6 +1011,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           border: none;
           text-align: left;
           touch-action: manipulation;
+          transition: background-color 0.18s ease, color 0.18s ease;
         }
 
         .mobile-nav-row-btn:active,
@@ -993,7 +1021,7 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
 
         .mobile-caret {
           color: var(--text-muted);
-          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
           flex-shrink: 0;
         }
 
@@ -1002,13 +1030,33 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           color: var(--primary);
         }
 
+        /* Плавне розгортання вкладок акордеона */
+        @keyframes mobileSubListExpand {
+          0% {
+            opacity: 0;
+            transform: translateY(-8px);
+            max-height: 0;
+          }
+          40% {
+            opacity: 0.4;
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+            max-height: 1400px;
+          }
+        }
+
         .mobile-sub-list {
-          padding-left: 0.5rem;
+          padding-left: 0.75rem;
           display: flex;
           flex-direction: column;
           gap: 0.35rem;
           margin: 0.35rem 0 0.85rem;
-          border-left: 2px solid var(--primary-subtle);
+          border-left: 2px solid var(--primary);
+          animation: mobileSubListExpand 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          overflow: hidden;
+          transform-origin: top;
         }
 
         .mobile-overview-link {
@@ -1028,11 +1076,13 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           border-radius: var(--radius-xs);
           text-decoration: none;
           touch-action: manipulation;
+          transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .mobile-sub-link:active {
           background: var(--bg-muted);
           color: var(--primary);
+          transform: translateX(4px);
         }
 
         .mobile-third-list {
@@ -1040,7 +1090,11 @@ export default function SiteHeader({ theme, onToggleTheme, onOpenSearch }) {
           display: flex;
           flex-direction: column;
           gap: 0.25rem;
-          margin: 0.25rem 0;
+          margin: 0.35rem 0 0.5rem 0.5rem;
+          border-left: 1.5px dashed var(--border-color);
+          animation: mobileSubListExpand 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          overflow: hidden;
+          transform-origin: top;
         }
 
         .mobile-third-link {
