@@ -1127,6 +1127,18 @@ export default function HomePage() {
           .bells-table-card {
             padding: 1rem;
           }
+          .bells-footer {
+            justify-content: stretch;
+            width: 100%;
+          }
+          .bells-footer .btn {
+            width: 100%;
+            justify-content: center;
+            white-space: normal;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 0.75rem 1rem;
+          }
           .partners-grid {
             grid-template-columns: repeat(2, 1fr);
             gap: 0.75rem;

@@ -297,6 +297,8 @@ export default function SchedulePage() {
           padding: 1rem 1.5rem;
           background: var(--bg-muted, #f8fafc);
           border-bottom: 1px solid var(--border-color, #e2e8f0);
+          flex-wrap: wrap;
+          gap: 0.75rem;
         }
 
         .embed-header h3 {
@@ -320,12 +322,58 @@ export default function SchedulePage() {
         .embed-frame-wrap {
           height: 640px;
           background: #f1f5f9;
+          width: 100%;
+          overflow: hidden;
         }
 
         .embed-frame-wrap iframe {
           width: 100%;
           height: 100%;
           border: none;
+          display: block;
+        }
+
+        @media (max-width: 640px) {
+          .schedule-header .page-title {
+            font-size: 1.65rem;
+            line-height: 1.25;
+            word-break: break-word;
+          }
+
+          .schedule-actions-bar {
+            flex-direction: column;
+            gap: 0.65rem;
+            width: 100%;
+          }
+
+          .schedule-actions-bar .btn {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+            white-space: normal;
+            font-size: 0.875rem;
+            padding: 0.75rem 1rem;
+          }
+
+          .embed-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.85rem 1rem;
+          }
+
+          .embed-header h3 {
+            font-size: 0.95rem;
+            line-height: 1.35;
+          }
+
+          .embed-badge {
+            align-self: flex-start;
+          }
+
+          .embed-frame-wrap {
+            height: 480px;
+          }
         }
 
         .bells-section {

@@ -107,10 +107,16 @@ export default function App() {
           background: var(--bg-base);
           color: var(--text-main);
           transition: background-color var(--transition-base, 0.2s), color var(--transition-base, 0.2s);
+          overflow-x: hidden;
+          width: 100%;
+          max-width: 100vw;
         }
 
         .site-main {
           flex: 1;
+          overflow-x: hidden;
+          width: 100%;
+          max-width: 100vw;
         }
       `}</style>
     </BrowserRouter>
