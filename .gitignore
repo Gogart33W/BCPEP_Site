@@ -27,5 +27,8 @@ dist-ssr
 Original_site/
 original_site/
 [Oo]rigin[a-z_]*
-storage/uploads/
 storage/*.db*
+storage/uploads/**/*.mp4
+storage/uploads/**/*.mov
+storage/uploads/**/*.avi
+storage/uploads/**/*.mkv
